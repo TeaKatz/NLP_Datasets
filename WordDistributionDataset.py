@@ -9,9 +9,9 @@ from .BaseDataset import BaseDataset
 from .path_config import meta_word_distribution_corpus_train_dir, word_distribution_corpus_dir
 
 
-def load_local_word_distribution(max_samples: int=1000000, context_size: int=4, context_words_num: int=1, non_context_words_num: int=None):
+def process_meta_word_distribution(context_size: int=4):
     # Process meta data
-    corpus_dir = word_distribution_corpus_dir + f"/local_word_distribution_context_size_{context_size}.json"
+    corpus_dir = word_distribution_corpus_dir + f"/word_distribution_context_size_{context_size}.json"
     if os.path.exists(corpus_dir):
         # Load processed meta data
         with open(corpus_dir, "r") as f:
@@ -44,6 +44,12 @@ def load_local_word_distribution(max_samples: int=1000000, context_size: int=4, 
         # Save processed meta data
         with open(corpus_dir, "w") as f:
             json.dump(word_distribution, f, indent=4)
+    return word_distribution
+
+
+def load_local_word_distribution(max_samples: int=1000000, context_size: int=4, context_words_num: int=1, non_context_words_num: int=None):
+    # Get word distribution
+    word_distribution = process_meta_word_distribution(context_size)
 
     # Generate sample
     for _ in range(max_samples):
@@ -54,9 +60,31 @@ def load_local_word_distribution(max_samples: int=1000000, context_size: int=4, 
             context_probs = [prob for _, prob in word_distribution[target_word]["contexts"].items()]
             sampling_context_words = np.random.choice(context_words, size=context_words_num, replace=False, p=context_probs)
             # Get non-context words
-            non_context_words = [word for word in word_distribution if word != target_word and word not in sampling_context_words]
-            sampling_non_context_words = np.random.choice(non_context_words, size=non_context_words_num, replace=False)
+            if non_context_words_num is None:
+                sampling_non_context_words = []
+            else:
+                non_context_words = [word for word in word_distribution if word != target_word and word not in context_words]
+                sampling_non_context_words = np.random.choice(non_context_words, size=non_context_words_num, replace=False)
             yield target_word, sampling_context_words, sampling_non_context_words
+
+
+def load_global_word_distribution(max_samples: int=None, context_size: int=4, context_words_num: int=1000, non_context_words_num: int=None):
+    # Get word distribution
+    word_distribution = process_meta_word_distribution(context_size)
+
+    # Generate sample
+    for i, target_word in enumerate(word_distribution):
+        if max_samples is not None:
+            if i >= max_samples:
+                break
+        # Get contexts
+        contexts = sorted(word_distribution[target_word].items(), key=lambda x: x[1], reverse=True)[:context_words_num]
+        # Get non-contexts
+        if non_context_words_num is None:
+            non_contexts = []
+        else:
+            non_contexts = [(word, 1 / non_context_words_num) for word in word_distribution if word != target_word and word not in word_distribution[target_word]["contexts"]][:non_context_words_num]
+        yield target_word, contexts, non_contexts
 
 
 class LocalWordDistributionDataset(BaseDataset):
@@ -100,3 +128,13 @@ class LocalWordDistributionDataset(BaseDataset):
         # Transform data into sample
         sample = {"input": {"target": target, "contexts": contexts, "non_contexts": non_contexts}}
         return sample
+
+
+class GlobalWordDistributionDataset(LocalWordDistributionDataset):
+    local_dir = "global_word_distribution_dataset"
+
+    def _load_train(self):
+        """ Yield data from training set """
+        yield load_global_word_distribution(max_samples=self.max_samples, 
+                                            context_words_num=self.context_words_num, 
+                                            non_context_words_num=self.non_context_words_num)

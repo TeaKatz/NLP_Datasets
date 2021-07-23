@@ -94,3 +94,6 @@ yahoo_corpus_dir = datasets_dir + "/yahoo_answers_csv"
 yahoo_corpus_train_dir = yahoo_corpus_dir + "/train.csv"
 yahoo_corpus_test_dir = yahoo_corpus_dir + "/test.csv"
 yahoo_corpus_classes_dir = yahoo_corpus_dir + "/classes.txt"
+# Word Distribution
+word_distribution_corpus_dir = datasets_dir + "/word_distribution_corpus"
+meta_word_distribution_corpus_train_dir = word_distribution_corpus_dir + "/meta_word_distribution_6000000.json"

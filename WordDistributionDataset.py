@@ -87,6 +87,19 @@ def load_global_word_distribution(max_samples: int=None, context_size: int=4, co
         yield target_word, contexts, non_contexts
 
 
+def load_word(max_samples: int=None):
+    # Read JSON
+    with open(meta_word_distribution_corpus_train_dir, "r") as f:
+        meta_word_distribution = json.load(f)
+
+    # Generate sample
+    for i, word in enumerate(meta_word_distribution):
+        if max_samples is not None:
+            if i >= max_samples:
+                break
+        yield word
+
+
 class LocalWordDistributionDataset(BaseDataset):
     local_dir = "local_word_distribution_dataset"
 
@@ -138,3 +151,28 @@ class GlobalWordDistributionDataset(LocalWordDistributionDataset):
         yield load_global_word_distribution(max_samples=self.max_samples, 
                                             context_words_num=self.context_words_num, 
                                             non_context_words_num=self.non_context_words_num)
+
+
+class WordDataset(BaseDataset):
+    local_dir = "word_dataset"
+
+    def _load_train(self):
+        """ Yield data from training set """
+        yield load_word(max_samples=self.max_samples)
+
+    def _load_val(self):
+        """ Yield data from validation set """
+        pass
+
+    def _load_test(self):
+        """ Yield data from test set """
+        pass
+
+    def _process_data(self, data):
+        """ Preprocess and transform data into sample """
+        # Extract data
+        word = data
+
+        # Transform data into sample
+        sample = {"input": word}
+        return sample

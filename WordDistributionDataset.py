@@ -17,6 +17,7 @@ def process_meta_word_distribution(context_size: int=4):
         with open(corpus_dir, "r") as f:
             word_distribution = json.load(f)
     else:
+        print("Processing meta data...")
         word_distribution = {}
 
         # Read JSON
@@ -28,12 +29,13 @@ def process_meta_word_distribution(context_size: int=4):
         word_probs = {word: meta_word_distribution[word]["freq"] / freq_all for word in meta_word_distribution}
 
         # Get target word
-        for target_word in tqdm(meta_word_distribution):
+        for target_word in meta_word_distribution:
             # Get context words
             contexts = {}
             for i in range(1, context_size + 1):
                 for context_word, freq in meta_word_distribution[target_word][f"context_{i}"].items():
-                    contexts[context_word] = contexts.get(context_word, 0) + freq
+                    if context_word in meta_word_distribution:
+                        contexts[context_word] = contexts.get(context_word, 0) + freq
             contexts = {word: (freq / meta_word_distribution[target_word]["freq"]) / word_probs[word] for word, freq in contexts.items()}
             # Normalize context's probability
             prob_all = sum([prob for prob in contexts.values()])
@@ -52,19 +54,25 @@ def load_local_word_distribution(max_samples: int=1000000, context_size: int=4, 
     word_distribution = process_meta_word_distribution(context_size)
 
     # Generate sample
+    count = 0
     for _ in range(max_samples):
+        if count >= max_samples:
+            break
         # Get target word
         for target_word in word_distribution:
+            if count >= max_samples:
+                break
             # Get context words
             context_words = [word for word, _ in word_distribution[target_word]["contexts"].items()]
             context_probs = [prob for _, prob in word_distribution[target_word]["contexts"].items()]
-            sampling_context_words = np.random.choice(context_words, size=context_words_num, replace=False, p=context_probs)
+            sampling_context_words = np.random.choice(context_words, size=context_words_num, replace=False, p=context_probs).tolist()
             # Get non-context words
             if non_context_words_num is None:
                 sampling_non_context_words = []
             else:
                 non_context_words = [word for word in word_distribution if word != target_word and word not in context_words]
-                sampling_non_context_words = np.random.choice(non_context_words, size=non_context_words_num, replace=False)
+                sampling_non_context_words = np.random.choice(non_context_words, size=non_context_words_num, replace=False).tolist()
+            count += 1
             yield target_word, sampling_context_words, sampling_non_context_words
 
 
@@ -78,7 +86,9 @@ def load_global_word_distribution(max_samples: int=None, context_size: int=4, co
             if i >= max_samples:
                 break
         # Get contexts
-        contexts = sorted(word_distribution[target_word].items(), key=lambda x: x[1], reverse=True)[:context_words_num]
+        context_words = [word for word, _ in word_distribution[target_word]["contexts"].items()]
+        context_probs = [prob for _, prob in word_distribution[target_word]["contexts"].items()]
+        contexts = sorted(zip(context_words, context_probs), key=lambda x: x[1], reverse=True)[:context_words_num]
         # Get non-contexts
         if non_context_words_num is None:
             non_contexts = []
@@ -110,20 +120,22 @@ class LocalWordDistributionDataset(BaseDataset):
                  max_samples: int=1000000,
                  train_split_ratio=0.9,
                  val_split_ratio=0.1,
-                 test_split_ratio=None,
+                 test_split_ratio=0.0,
                  random_seed: int=0,
                  local_dir: str=None):
 
-        super().__init__(max_samples, train_split_ratio, val_split_ratio, test_split_ratio, random_seed, local_dir)
         self.context_size = context_size
         self.context_words_num = context_words_num
         self.non_context_words_num = non_context_words_num
+        super().__init__(max_samples, train_split_ratio, val_split_ratio, test_split_ratio, random_seed, local_dir)
 
     def _load_train(self):
         """ Yield data from training set """
-        yield load_local_word_distribution(max_samples=self.max_samples, 
-                                           context_words_num=self.context_words_num, 
-                                           non_context_words_num=self.non_context_words_num)
+        for target_word, sampling_context_words, sampling_non_context_words in load_local_word_distribution(max_samples=self.max_samples, 
+                                                                                                            context_size=self.context_size,
+                                                                                                            context_words_num=self.context_words_num, 
+                                                                                                            non_context_words_num=self.non_context_words_num):
+            yield target_word, sampling_context_words, sampling_non_context_words
 
     def _load_val(self):
         """ Yield data from validation set """
@@ -139,7 +151,7 @@ class LocalWordDistributionDataset(BaseDataset):
         target, contexts, non_contexts = data
 
         # Transform data into sample
-        sample = {"input": {"target": target, "contexts": contexts, "non_contexts": non_contexts}}
+        sample = {"input": {"target_word": target, "context_words": contexts, "non_context_words": non_contexts}}
         return sample
 
 
@@ -148,9 +160,11 @@ class GlobalWordDistributionDataset(LocalWordDistributionDataset):
 
     def _load_train(self):
         """ Yield data from training set """
-        yield load_global_word_distribution(max_samples=self.max_samples, 
-                                            context_words_num=self.context_words_num, 
-                                            non_context_words_num=self.non_context_words_num)
+        for target_word, contexts, non_contexts in load_global_word_distribution(max_samples=self.max_samples, 
+                                                                                 context_size=self.context_size,
+                                                                                 context_words_num=self.context_words_num, 
+                                                                                 non_context_words_num=self.non_context_words_num):
+            yield target_word, contexts, non_contexts
 
 
 class WordDataset(BaseDataset):
@@ -158,7 +172,8 @@ class WordDataset(BaseDataset):
 
     def _load_train(self):
         """ Yield data from training set """
-        yield load_word(max_samples=self.max_samples)
+        for word in load_word(max_samples=self.max_samples):
+            yield word
 
     def _load_val(self):
         """ Yield data from validation set """

@@ -99,4 +99,3 @@ word_distribution_corpus_dir = datasets_dir + "/word_distribution_corpus"
 meta_word_distribution_corpus_train_dir = word_distribution_corpus_dir + "/meta_word_distribution_10000000.json"
 # Word Audio
 word_audio_corpus_dir = datasets_dir + "/word_audio_corpus"
-word_audio_corpus_train_dir = word_audio_corpus_dir + "/train"

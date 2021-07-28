@@ -97,7 +97,7 @@ def load_local_word_distribution(max_samples: int=10000, context_size: int=4, co
             yield target_word, sampling_context_words, sampling_non_context_words
 
 
-def load_global_word_distribution(max_samples: int=None, context_size: int=4, context_words_num: int=1000):
+def load_global_word_distribution(max_samples: int=None, context_size: int=4, context_words_num: int=100):
     # Get word distribution
     word_indexing, word_distribution = process_meta_word_distribution(context_size)
     reversed_word_indexing = {idx: word for word, idx in word_indexing.items()}
@@ -108,7 +108,7 @@ def load_global_word_distribution(max_samples: int=None, context_size: int=4, co
             if i >= max_samples:
                 break
         # Get contexts
-        sorted_indices = np.argsort(word_distribution[target_idx])[:context_words_num]
+        sorted_indices = np.argsort(word_distribution[target_idx])[::-1][:context_words_num]
         context_words = [(reversed_word_indexing[idx], word_distribution[target_idx, idx]) for idx in sorted_indices]
         yield target_word, context_words
 
@@ -176,7 +176,7 @@ class GlobalWordDistributionDataset(BaseDataset):
 
     def __init__(self,
                  context_size: int=4,
-                 context_words_num: int=1000,
+                 context_words_num: int=100,
                  max_samples: int=None,
                  train_split_ratio=0.9,
                  val_split_ratio=0.1,

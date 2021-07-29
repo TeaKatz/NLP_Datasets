@@ -11,7 +11,7 @@ def load_spelling_similarity(max_samples: int=None, include_word: bool=True, inc
         with open(spelling_similarity_words_dir, "r") as f:
             for line in f.readlines():
                 count += 1
-                if count > max_samples:
+                if (max_samples is not None) and (count > max_samples):
                     break
                 word1, word2 = line.strip().split(":")
                 yield word1, word2
@@ -20,7 +20,7 @@ def load_spelling_similarity(max_samples: int=None, include_word: bool=True, inc
         with open(spelling_similarity_anagram_dir, "r") as f:
             for line in f.readlines():
                 count += 1
-                if count > max_samples:
+                if (max_samples is not None) and (count > max_samples):
                     break
                 word1, word2 = line.strip().split(":")
                 yield word1, word2
@@ -29,7 +29,7 @@ def load_spelling_similarity(max_samples: int=None, include_word: bool=True, inc
         with open(spelling_similarity_misspellings_dir, "r") as f:
             for line in f.readlines():
                 count += 1
-                if count > max_samples:
+                if (max_samples is not None) and (count > max_samples):
                     break
                 word1, word2 = line.strip().split(":")
                 yield word1, word2
@@ -75,7 +75,7 @@ class SpellingSimilarityDataset(BaseDataset):
         word1, word2 = data
 
         # Calculate CER similarity
-        cer_similarity = 1 - Metrics(["CER"])([word1], [word2])["CER"]
+        cer_similarity = 1 - (Metrics(["CER"])([word1], [word2])["CER"] / 100) 
 
         # Transform data into sample
         sample = {"input": (word1, word2), "target": cer_similarity}

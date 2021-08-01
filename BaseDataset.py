@@ -112,11 +112,20 @@ class BaseDataset:
     def _load_datasets(self):
         # Read train_dirs, val_dirs, and test_dirs
         with open(os.path.join(self.local_dir, "train_dirs.txt"), "r") as f:
-            train_dirs = f.read().split("\n")
+            train_dirs = []
+            for line in f.readlines():
+                line = line.replace("\n", "")
+                train_dirs.append(line)
         with open(os.path.join(self.local_dir, "val_dirs.txt"), "r") as f:
-            val_dirs = f.read().split("\n")
+            val_dirs = []
+            for line in f.readlines():
+                line = line.replace("\n", "")
+                val_dirs.append(line)
         with open(os.path.join(self.local_dir, "test_dirs.txt"), "r") as f:
-            test_dirs = f.read().split("\n")
+            test_dirs = []
+            for line in f.readlines():
+                line = line.replace("\n", "")
+                test_dirs.append(line)
         # Get Generators
         train = DatasetGenerator([os.path.join(self.local_dir, "data", file_name) for file_name in train_dirs])
         val = DatasetGenerator([os.path.join(self.local_dir, "data", file_name) for file_name in val_dirs])

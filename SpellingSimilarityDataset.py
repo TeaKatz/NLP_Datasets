@@ -1,5 +1,3 @@
-import joblib
-
 from ..NLP_Metrics import Metrics
 from .BaseDataset import BaseDataset
 from .path_config import spelling_similarity_words_dir, spelling_similarity_anagram_dir, spelling_similarity_misspellings_dir
@@ -33,6 +31,7 @@ def load_spelling_similarity(max_samples: int=None, include_word: bool=True, inc
                     break
                 word1, word2 = line.strip().split(":")
                 yield word1, word2
+
 
 class SpellingSimilarityDataset(BaseDataset):
     local_dir = "spelling_similarity_dataset"
@@ -80,3 +79,69 @@ class SpellingSimilarityDataset(BaseDataset):
         # Transform data into sample
         sample = {"input": (word1, word2), "target": cer_similarity}
         return sample
+
+
+class WordSpellingSimilarityDataset(SpellingSimilarityDataset):
+    local_dir = "word_spelling_similarity_dataset"
+
+    def __init__(self,
+                max_samples=None, 
+                train_split_ratio=0.8,
+                val_split_ratio=0.1,
+                test_split_ratio=0.1,
+                random_seed=0, 
+                local_dir=None):
+
+        super().__init__(include_word=True, 
+                         include_anagram=False, 
+                         include_misspelling=False, 
+                         max_samples=max_samples, 
+                         train_split_ratio=train_split_ratio, 
+                         val_split_ratio=val_split_ratio, 
+                         test_split_ratio=test_split_ratio, 
+                         random_seed=random_seed, 
+                         local_dir=local_dir)
+
+
+class AnagramSpellingSimilarityDataset(SpellingSimilarityDataset):
+    local_dir = "anagram_spelling_similarity_dataset"
+
+    def __init__(self,
+                max_samples=None, 
+                train_split_ratio=0.8,
+                val_split_ratio=0.1,
+                test_split_ratio=0.1,
+                random_seed=0, 
+                local_dir=None):
+
+        super().__init__(include_word=False, 
+                         include_anagram=True, 
+                         include_misspelling=False, 
+                         max_samples=max_samples, 
+                         train_split_ratio=train_split_ratio, 
+                         val_split_ratio=val_split_ratio, 
+                         test_split_ratio=test_split_ratio, 
+                         random_seed=random_seed, 
+                         local_dir=local_dir)
+
+
+class MisspellingSpellingSimilarityDataset(SpellingSimilarityDataset):
+    local_dir = "misspelling_spelling_similarity_dataset"
+
+    def __init__(self,
+                max_samples=None, 
+                train_split_ratio=0.8,
+                val_split_ratio=0.1,
+                test_split_ratio=0.1,
+                random_seed=0, 
+                local_dir=None):
+
+        super().__init__(include_word=False, 
+                         include_anagram=False, 
+                         include_misspelling=True, 
+                         max_samples=max_samples, 
+                         train_split_ratio=train_split_ratio, 
+                         val_split_ratio=val_split_ratio, 
+                         test_split_ratio=test_split_ratio, 
+                         random_seed=random_seed, 
+                         local_dir=local_dir)

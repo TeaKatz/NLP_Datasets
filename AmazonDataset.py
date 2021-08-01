@@ -2,7 +2,7 @@ import os
 import joblib
 
 from .BaseDataset import BaseDataset
-from .path_config import amazon_corpus_train_dirs
+from .path_config import amazon_corpus_dirs
 
 
 star_rating_col = 7
@@ -11,10 +11,28 @@ review_body_col = 13
 
 
 def load_amazon(max_samples=None):
+    count = 0
+    for data_dir in amazon_corpus_dirs:
+        with open(data_dir, "r") as f:
+            for i, line in enumerate(f):
+                # Skip the first line
+                if i == 0:
+                    continue
+
+                count += 1
+                if (max_samples is not None) and (count > max_samples):
+                    break
+
+                label = line.split("\t")[star_rating_col]
+                title_text = line.split("\t")[review_headline_col]
+                body_text = line.split("\t")[review_body_col]
+                yield label, title_text, body_text
+
+def _load_amazon(max_samples=None):
     labels = []
     title_texts = []
     body_texts = []
-    for train_dir in amazon_corpus_train_dirs:
+    for train_dir in amazon_corpus_dirs:
         with open(train_dir, "r") as f:
             for i, line in enumerate(f):
                 # Skip the first line
@@ -64,14 +82,8 @@ class AmazonDataset(BaseDataset):
 
     def _load_train(self):
         """ Yield data from training set """
-        if os.path.exists(os.path.join(self.local_dir, "load_train_amazon.pkl")):
-            # Load from local disk
-            labels, title_texts, body_texts = joblib.load(os.path.join(self.local_dir, "load_train_amazon.pkl"))
-        else:
-            labels, title_texts, body_texts = load_amazon(max_samples=self.max_samples)
-            joblib.dump((labels, title_texts, body_texts), os.path.join(self.local_dir, "load_train_amazon.pkl"))
-
-        for label, title_text, body_text in zip(labels, title_texts, body_texts):
+        for label, title_text, body_text in load_amazon(max_samples=self.max_samples):
+            print(label)
             yield label, title_text, body_text
 
     def _load_val(self):

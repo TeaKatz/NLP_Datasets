@@ -1,19 +1,19 @@
 import joblib
 
 from .BaseDataset import BaseDataset
-from .path_config import word_audio_corpus_dir
+from .path_config import word_audio_corpus_indexing_dir, word_audio_corpus_data_dir
 
 
 def load_word_audio(max_samples: int=None):
     # Get indexing
-    with open(word_audio_corpus_dir + "/indexing.txt", "r") as f:
+    with open(word_audio_corpus_indexing_dir, "r") as f:
         indexing = {line.split(":")[0]: line.split(":")[-1] for line in f.read().split("\n") if line != ""}
     
     for i, (word, filename) in enumerate(indexing.items()):
         if max_samples is not None and i >= max_samples:
             break
         
-        audio = joblib.load(word_audio_corpus_dir + "/data/" + filename)
+        audio = joblib.load(word_audio_corpus_data_dir + "/" + filename)
         yield word, audio
 
 

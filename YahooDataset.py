@@ -8,17 +8,21 @@ from .path_config import yahoo_corpus_train_dir, yahoo_corpus_test_dir
 
 def load_yahoo(max_samples=None, test_set=False):
     def _load_yahoo(corpus_dir):
-        # Read CSV
-        dataframe = pd.read_csv(corpus_dir, header=None, index_col=None)
-        # Limit samples size
-        if max_samples:
-            dataframe = dataframe.iloc[:max_samples]
-        # Get label, title, content, and answer
-        labels = dataframe.iloc[:, 0].to_list()
-        title_texts = dataframe.iloc[:, 1].to_list()
-        content_texts = dataframe.iloc[:, 2].to_list()
-        answer_texts = dataframe.iloc[:, 3].to_list()
-        return labels, title_texts, content_texts, answer_texts
+        count = 0
+        with open(corpus_dir, "r") as f:
+            for line in f.readlines():
+                # Terminate by max_samples
+                count += 1
+                if (max_samples is not None) and (count > max_samples):
+                    break
+                # Remove '\n'
+                line = line[:-1]
+                # Split by ',' and remove '"' and start and end
+                label = line.split(",")[0][1:-1]
+                title_text = line.split(",")[1][1:-1]
+                content_text = line.split(",")[2][1:-1]
+                answer_text = line.split(",")[3][1:-1]
+                yield label, title_text, content_text, answer_text
 
     if test_set:
         return _load_yahoo(yahoo_corpus_test_dir)
@@ -48,28 +52,14 @@ class YahooDataset(BaseDataset):
         super().__init__(max_samples, train_split_ratio, val_split_ratio, test_split_ratio, random_seed, local_dir)
 
     def _load_train(self):
-        if os.path.exists(os.path.join(self.local_dir, "loaded_train_yahoo.pkl")):
-            # Load from local disk
-            labels, title_texts, content_texts, answer_texts = joblib.load(os.path.join(self.local_dir, "loaded_train_yahoo.pkl"))
-        else:
-            labels, title_texts, content_texts, answer_texts = load_yahoo(max_samples=self.max_samples, test_set=False)
-            joblib.dump((labels, title_texts, content_texts, answer_texts), os.path.join(self.local_dir, "loaded_train_yahoo.pkl"))
-
-        for label, title_text, content_text, answer_text in zip(labels, title_texts, content_texts, answer_texts):
+        for label, title_text, content_text, answer_text in load_yahoo(max_samples=self.max_samples, test_set=False):
             yield label, title_text, content_text, answer_text
 
     def _load_val(self):
         pass
 
     def _load_test(self):
-        if os.path.exists(os.path.join(self.local_dir, "loaded_test_yahoo.pkl")):
-            # Load from local disk
-            labels, title_texts, content_texts, answer_texts = joblib.load(os.path.join(self.local_dir, "loaded_test_yahoo.pkl"))
-        else:
-            labels, title_texts, content_texts, answer_texts = load_yahoo(max_samples=self.max_samples, test_set=True)
-            joblib.dump((labels, title_texts, content_texts, answer_texts), os.path.join(self.local_dir, "loaded_test_yahoo.pkl"))
-
-        for label, title_text, content_text, answer_text in zip(labels, title_texts, content_texts, answer_texts):
+        for label, title_text, content_text, answer_text in load_yahoo(max_samples=self.max_samples, test_set=True):
             yield label, title_text, content_text, answer_text
 
     def _process_data(self, data):

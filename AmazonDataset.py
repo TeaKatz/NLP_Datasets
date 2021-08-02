@@ -18,11 +18,11 @@ def load_amazon(max_samples=None):
                 # Skip the first line
                 if i == 0:
                     continue
-
+                # Terminate by max_samples
                 count += 1
                 if (max_samples is not None) and (count > max_samples):
                     break
-
+                # Get needed information
                 label = line.split("\t")[star_rating_col]
                 title_text = line.split("\t")[review_headline_col]
                 body_text = line.split("\t")[review_body_col]

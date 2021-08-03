@@ -1,4 +1,4 @@
-from ..NLP_Metrics import Metrics
+from NLP_Metrics import Metrics
 from .BaseDataset import BaseDataset
 from .path_config import spelling_similarity_words_dir, spelling_similarity_anagram_dir, spelling_similarity_misspellings_dir
 

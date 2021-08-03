@@ -1,7 +1,3 @@
-import os
-import joblib
-import pandas as pd
-
 from .BaseDataset import BaseDataset
 from .path_config import yahoo_corpus_train_dir, yahoo_corpus_test_dir
 

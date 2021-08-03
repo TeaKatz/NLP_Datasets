@@ -2,7 +2,7 @@ import os
 
 
 # Path configuration
-datasets_dir = os.path.dirname(__file__) + "/Datasets"
+datasets_dir = os.path.dirname(__file__) + "../datasets"
 
 # SCB-MT-EN-TH-2020
 scbmt_corpus_base_dir = datasets_dir + "/scb-mt-en-th-2020"

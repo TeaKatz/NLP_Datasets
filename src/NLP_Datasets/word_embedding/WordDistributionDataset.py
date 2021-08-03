@@ -4,8 +4,8 @@ import joblib
 
 import numpy as np
 
-from .BaseDataset import BaseDataset
-from .path_config import meta_word_distribution_dir, word_distribution_corpus_base_dir
+from ..BaseDataset import BaseDataset
+from ..path_config import meta_word_distribution_dir, word_distribution_corpus_base_dir
 
 
 def process_meta_word_distribution(context_size: int=4):

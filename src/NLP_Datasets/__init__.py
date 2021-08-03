@@ -1,16 +1,12 @@
-from .AmazonDataset import AmazonDataset
+from .machine_translation import SCBMTDataset
 
-from .YahooDataset import YahooDataset
+from .sentence_classification import AmazonDataset
+from .sentence_classification import YahooDataset
 
-from .ScbmtDataset import ScbmtDataset
+from .text_to_speech import WordAudioDataset
 
-from .WordDistributionDataset import LocalWordDistributionDataset
-from .WordDistributionDataset import GlobalWordDistributionDataset
-from .WordDistributionDataset import WordDataset
+from .word_embedding import LocalWordDistributionDataset
+from .word_embedding import GlobalWordDistributionDataset
+from .word_embedding import WordDataset
 
-from .WordAudioDataset import WordAudioDataset
-
-from .SpellingSimilarityDataset import SpellingSimilarityDataset
-from .SpellingSimilarityDataset import WordSpellingSimilarityDataset
-from .SpellingSimilarityDataset import AnagramSpellingSimilarityDataset
-from .SpellingSimilarityDataset import MisspellingSpellingSimilarityDataset
+from .BaseDataset import BaseDataset

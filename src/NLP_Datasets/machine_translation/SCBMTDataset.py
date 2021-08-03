@@ -2,11 +2,11 @@ import os
 import joblib
 import pandas as pd
 
-from .BaseDataset import BaseDataset
-from .path_config import scbmt_corpus_dirs
+from ..BaseDataset import BaseDataset
+from ..path_config import scbmt_corpus_dirs
 
 
-def load_scbmt(max_samples=None):
+def load_corpus(max_samples=None):
     en_sentences = []
     th_sentences = []
     for train_dir in scbmt_corpus_dirs:
@@ -23,8 +23,8 @@ def load_scbmt(max_samples=None):
     return en_sentences, th_sentences
 
 
-class ScbmtDataset(BaseDataset):
-    local_dir = "scb_dataset"
+class SCBMTDataset(BaseDataset):
+    local_dir = "scbmt_dataset"
 
     def __init__(self,
                 task="en2th",
@@ -45,7 +45,7 @@ class ScbmtDataset(BaseDataset):
             # Load from local disk
             en_sentences, th_sentences = joblib.load(os.path.join(self.local_dir, "loaded_train_scb.pkl"))
         else:
-            en_sentences, th_sentences = load_scbmt(max_samples=self.max_samples)
+            en_sentences, th_sentences = load_corpus(max_samples=self.max_samples)
             joblib.dump((en_sentences, th_sentences), os.path.join(self.local_dir, "loaded_train_scb.pkl"))
 
         for en_sentence, th_sentence in zip(en_sentences, th_sentences):

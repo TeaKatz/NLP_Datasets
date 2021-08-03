@@ -1,5 +1,5 @@
-from .BaseDataset import BaseDataset
-from .path_config import amazon_corpus_dirs
+from ..BaseDataset import BaseDataset
+from ..path_config import amazon_corpus_dirs
 
 
 star_rating_col = 7
@@ -7,7 +7,7 @@ review_headline_col = 12
 review_body_col = 13
 
 
-def load_amazon(max_samples=None):
+def load_corpus(max_samples=None):
     count = 0
     for data_dir in amazon_corpus_dirs:
         with open(data_dir, "r") as f:
@@ -47,7 +47,7 @@ class AmazonDataset(BaseDataset):
 
     def _load_train(self):
         """ Yield data from training set """
-        for label, title_text, body_text in load_amazon(max_samples=self.max_samples):
+        for label, title_text, body_text in load_corpus(max_samples=self.max_samples):
             yield label, title_text, body_text
 
     def _load_val(self):

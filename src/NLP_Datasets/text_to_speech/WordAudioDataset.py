@@ -1,10 +1,10 @@
 import joblib
 
-from .BaseDataset import BaseDataset
-from .path_config import word_audio_corpus_indexing_dir, word_audio_corpus_data_dir
+from ..BaseDataset import BaseDataset
+from ..path_config import word_audio_corpus_indexing_dir, word_audio_corpus_data_dir
 
 
-def load_word_audio(max_samples: int=None):
+def load_corpus(max_samples: int=None):
     # Get indexing
     with open(word_audio_corpus_indexing_dir, "r") as f:
         indexing = {line.split(":")[0]: line.split(":")[-1] for line in f.read().split("\n") if line != ""}
@@ -22,7 +22,7 @@ class WordAudioDataset(BaseDataset):
 
     def _load_train(self):
         """ Yield data from training set """
-        for word, audio in load_word_audio(max_samples=self.max_samples):
+        for word, audio in load_corpus(max_samples=self.max_samples):
             yield word, audio
 
     def _load_val(self):

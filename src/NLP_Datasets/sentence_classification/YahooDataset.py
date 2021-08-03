@@ -1,9 +1,9 @@
-from .BaseDataset import BaseDataset
-from .path_config import yahoo_corpus_train_dir, yahoo_corpus_test_dir
+from ..BaseDataset import BaseDataset
+from ..path_config import yahoo_corpus_train_dir, yahoo_corpus_test_dir
 
 
-def load_yahoo(max_samples=None, test_set=False):
-    def _load_yahoo(corpus_dir):
+def load_corpus(max_samples=None, test_set=False):
+    def _load_corpus(corpus_dir):
         count = 0
         with open(corpus_dir, "r") as f:
             for line in f.readlines():
@@ -21,9 +21,9 @@ def load_yahoo(max_samples=None, test_set=False):
                 yield label, title_text, content_text, answer_text
 
     if test_set:
-        return _load_yahoo(yahoo_corpus_test_dir)
+        return _load_corpus(yahoo_corpus_test_dir)
     else:
-        return _load_yahoo(yahoo_corpus_train_dir)
+        return _load_corpus(yahoo_corpus_train_dir)
 
 
 class YahooDataset(BaseDataset):
@@ -48,14 +48,14 @@ class YahooDataset(BaseDataset):
         super().__init__(max_samples, train_split_ratio, val_split_ratio, test_split_ratio, random_seed, local_dir)
 
     def _load_train(self):
-        for label, title_text, content_text, answer_text in load_yahoo(max_samples=self.max_samples, test_set=False):
+        for label, title_text, content_text, answer_text in load_corpus(max_samples=self.max_samples, test_set=False):
             yield label, title_text, content_text, answer_text
 
     def _load_val(self):
         pass
 
     def _load_test(self):
-        for label, title_text, content_text, answer_text in load_yahoo(max_samples=self.max_samples, test_set=True):
+        for label, title_text, content_text, answer_text in load_corpus(max_samples=self.max_samples, test_set=True):
             yield label, title_text, content_text, answer_text
 
     def _process_data(self, data):

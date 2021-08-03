@@ -20,39 +20,6 @@ scbmt_corpus_dirs = [
     scbmt_corpus_base_dir + "/thai_websites.csv",
     scbmt_corpus_base_dir + "/wikipedia.csv",
 ]
-# # BEST NECTEC
-# best_corpus_dir = datasets_dir + "/best_nectec_corpus"
-# best_corpus_train_dirs = [best_corpus_dir + "/" + name for name in ["novel", "news", "encyclopedia", "article"]]
-# best_corpus_test_dirs = [best_corpus_dir + "/testset"]
-# # Prachathai-67k
-# prachathai_corpus_dir = datasets_dir + "/prachathai-67k/prachathai-67k.csv"
-# # LST20
-# lst20_corpus_dir = datasets_dir + "/LST20_Corpus"
-# lst20_corpus_genres_dir = lst20_corpus_dir + "/genres.txt"
-# lst20_corpus_train_dir = lst20_corpus_dir + "/train"
-# lst20_corpus_val_dir = lst20_corpus_dir + "/val"
-# lst20_corpus_test_dir = lst20_corpus_dir + "/test"
-# # Thai-Sentiment-Analysis
-# that_sentiment_corpus_dir = datasets_dir + "/thai-sentiment-analysis-dataset"
-# # Wisesight-Sentiment
-# wisesight_sentiment_corpus_dir = datasets_dir + "/wisesight-sentiment"
-# wisesight_sentiment_corpus_pos_dir = wisesight_sentiment_corpus_dir + "/pos.txt"
-# wisesight_sentiment_corpus_neg_dir = wisesight_sentiment_corpus_dir + "/neg.txt"
-# wisesight_sentiment_corpus_neu_dir = wisesight_sentiment_corpus_dir + "/neu.txt"
-# wisesight_sentiment_corpus_q_dir = wisesight_sentiment_corpus_dir + "/q.txt"
-# # Wongnai
-# wongnai_corpus_dir = datasets_dir + "/wongnai-corpus"
-# wongnai_corpus_review_dir = wongnai_corpus_dir + "/review"
-# wongnai_corpus_review_test_dir = wongnai_corpus_review_dir + "/test_file.csv"
-# wongnai_corpus_review_train_dir = wongnai_corpus_review_dir + "/w_review_train.csv"
-# wongnai_corpus_search_dir = wongnai_corpus_dir + "/search"
-# wongnai_corpus_search_food_dictionary_dir = wongnai_corpus_search_dir + "/food_dictionary.txt"
-# wongnai_corpus_search_labeled_algo_dir = wongnai_corpus_search_dir + "/labeled_queries_by_algo.txt"
-# wongnai_corpus_search_labeled_judge_dir = wongnai_corpus_search_dir + "/labeled_queries_by_judges.txt"
-# # VISTEC-TP-TH-2021
-# vistec_tpth_corpus_dir = datasets_dir + "/VISTEC-TP-TH-2021"
-# vistec_tpth_corpus_train_dir = vistec_tpth_corpus_dir + "/train/VISTEC-TP-TH-2021_train_proprocessed.txt"
-# vistec_tpth_corpus_test_dir = vistec_tpth_corpus_dir + "/test/VISTEC-TP-TH-2021_test_proprocessed.txt"
 # Amazon Review
 amazon_corpus_base_dir = datasets_dir + "/amazon"
 amazon_corpus_dirs = [

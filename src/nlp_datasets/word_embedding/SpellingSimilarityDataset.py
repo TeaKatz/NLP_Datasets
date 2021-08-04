@@ -1,6 +1,5 @@
-from nlp_metrics import Metrics
 from ..BaseDataset import BaseDataset
-from ..path_config import spelling_similarity_words_dir, spelling_similarity_anagrams_dir, spelling_similarity_misspellings_dir
+from ..path_config import SPELLING_SIMILARITY_WORDS_DIR, SPELLING_SIMILARITY_ANAGRAMS_DIR, SPELLING_SIMILARITY_MISSPELLINGS_DIR
 
 
 def load_corpus(max_samples: int=None, include_word: bool=True, include_anagram: bool=True, include_misspelling: bool=True):
@@ -13,21 +12,21 @@ def load_corpus(max_samples: int=None, include_word: bool=True, include_anagram:
 
     count = 0
     if include_word:
-        for word1, word2, similarity in _load_corpus(spelling_similarity_words_dir):
+        for word1, word2, similarity in _load_corpus(SPELLING_SIMILARITY_WORDS_DIR):
             count += 1
             # Terminate by max_samples
             if (max_samples is not None) and (count > max_samples):
                 break
             yield word1, word2, similarity
     if include_anagram:
-        for word1, word2, similarity in _load_corpus(spelling_similarity_anagrams_dir):
+        for word1, word2, similarity in _load_corpus(SPELLING_SIMILARITY_ANAGRAMS_DIR):
             count += 1
             # Terminate by max_samples
             if (max_samples is not None) and (count > max_samples):
                 break
             yield word1, word2, similarity
     if include_misspelling:
-        for word1, word2, similarity in _load_corpus(spelling_similarity_misspellings_dir):
+        for word1, word2, similarity in _load_corpus(SPELLING_SIMILARITY_MISSPELLINGS_DIR):
             count += 1
             # Terminate by max_samples
             if (max_samples is not None) and (count > max_samples):

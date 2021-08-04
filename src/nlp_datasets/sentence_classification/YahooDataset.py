@@ -1,5 +1,5 @@
 from ..BaseDataset import BaseDataset
-from ..path_config import yahoo_corpus_train_dir, yahoo_corpus_test_dir
+from ..path_config import YAHOO_TRAIN_DIR, YAHOO_TEST_DIR
 
 
 def load_corpus(max_samples=None, test_set=False):
@@ -21,9 +21,9 @@ def load_corpus(max_samples=None, test_set=False):
                 yield label, title_text, content_text, answer_text
 
     if test_set:
-        return _load_corpus(yahoo_corpus_test_dir)
+        return _load_corpus(YAHOO_TEST_DIR)
     else:
-        return _load_corpus(yahoo_corpus_train_dir)
+        return _load_corpus(YAHOO_TRAIN_DIR)
 
 
 class YahooDataset(BaseDataset):

@@ -3,13 +3,13 @@ import joblib
 import pandas as pd
 
 from ..BaseDataset import BaseDataset
-from ..path_config import scbmt_corpus_dirs
+from ..path_config import SCBMT_DIRS
 
 
 def load_corpus(max_samples=None):
     en_sentences = []
     th_sentences = []
-    for train_dir in scbmt_corpus_dirs:
+    for train_dir in SCBMT_DIRS:
         dataframe = pd.read_csv(train_dir)
         en_sentences.extend(dataframe["en_text"].to_list())
         th_sentences.extend(dataframe["th_text"].to_list())

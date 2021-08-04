@@ -1,5 +1,5 @@
 from ..BaseDataset import BaseDataset
-from ..path_config import amazon_corpus_dirs
+from ..path_config import AMAZON_DIRS
 
 
 star_rating_col = 7
@@ -9,7 +9,7 @@ review_body_col = 13
 
 def load_corpus(max_samples=None):
     count = 0
-    for data_dir in amazon_corpus_dirs:
+    for data_dir in AMAZON_DIRS:
         with open(data_dir, "r") as f:
             for i, line in enumerate(f):
                 # Skip the first line

@@ -5,7 +5,7 @@ from ..path_config import yahoo_corpus_train_dir, yahoo_corpus_test_dir
 def load_corpus(max_samples=None, test_set=False):
     def _load_corpus(corpus_dir):
         count = 0
-        with open(corpus_dir, "r") as f:
+        with open(corpus_dir, "r", errors="ignore") as f:
             for line in f.readlines():
                 # Terminate by max_samples
                 count += 1

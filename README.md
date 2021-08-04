@@ -131,6 +131,20 @@ A  repository gathers utility modules for reading datasets.
 >>}
 >>```
 
+### SemanticSimilarityDataset: [[code]](https://github.com/TeaKatz/NLP_Datasets/blob/main/src/nlp_datasets/word_embedding/SemanticSimilarityDataset.py)
+> **CLASS** SemanticSimilarityDataset(max_samples=None, train_split_ratio=0.8, val_split_ratio=0.1, test_split_ratio=0.1, random_seed=0, local_dir=None)
+>
+>>**PARAMETERS:**
+>
+>>**SAMPLE:**
+>>```
+>>{
+>>    "word1": (str),
+>>    "word2": (str),
+>>    "similarity": (float)
+>>}
+>>```
+
 ## Sentence Classification
 ### AmazonDataset: [[code]](https://github.com/TeaKatz/NLP_Datasets/blob/2d2ef8300e3423999ee75f5812b1484a0451f5b8/src/nlp_datasets/sentence_classification/AmazonDataset.py)
 > **CLASS** AmazonDataset(ignore_title=False, ignore_body=False, max_samples=None, train_split_ratio=0.8, val_split_ratio=0.1, test_split_ratio=0.1, random_seed=0, local_dir=None)

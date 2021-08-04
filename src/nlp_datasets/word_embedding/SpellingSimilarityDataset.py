@@ -1,27 +1,38 @@
 from nlp_metrics import Metrics
 from ..BaseDataset import BaseDataset
-from ..path_config import spelling_similarity_words_dir, spelling_similarity_anagram_dir, spelling_similarity_misspellings_dir
+from ..path_config import spelling_similarity_words_dir, spelling_similarity_anagrams_dir, spelling_similarity_misspellings_dir
 
 
 def load_corpus(max_samples: int=None, include_word: bool=True, include_anagram: bool=True, include_misspelling: bool=True):
-    def _load_corpus(corpus_dir, count: int=0):
+    def _load_corpus(corpus_dir):
         with open(corpus_dir, "r") as f:
             for line in f.readlines():
-                count += 1
-                # Terminate by max_samples
-                if (max_samples is not None) and (count > max_samples):
-                    break
                 # Read line
                 word1, word2, similarity = line.strip().split(":")
                 yield word1, word2, similarity
 
     count = 0
     if include_word:
-        count = _load_corpus(spelling_similarity_words_dir, count=count)
+        for word1, word2, similarity in _load_corpus(spelling_similarity_words_dir):
+            count += 1
+            # Terminate by max_samples
+            if (max_samples is not None) and (count > max_samples):
+                break
+            yield word1, word2, similarity
     if include_anagram:
-        count = _load_corpus(spelling_similarity_anagram_dir, count=count)
+        for word1, word2, similarity in _load_corpus(spelling_similarity_anagrams_dir):
+            count += 1
+            # Terminate by max_samples
+            if (max_samples is not None) and (count > max_samples):
+                break
+            yield word1, word2, similarity
     if include_misspelling:
-        count = _load_corpus(spelling_similarity_misspellings_dir, count=count)
+        for word1, word2, similarity in _load_corpus(spelling_similarity_misspellings_dir):
+            count += 1
+            # Terminate by max_samples
+            if (max_samples is not None) and (count > max_samples):
+                break
+            yield word1, word2, similarity
 
 
 class SpellingSimilarityDataset(BaseDataset):
@@ -45,11 +56,11 @@ class SpellingSimilarityDataset(BaseDataset):
 
     def _load_train(self):
         """ Yield data from training set """
-        for word1, word2 in load_corpus(max_samples=self.max_samples,
+        for word1, word2, similarity in load_corpus(max_samples=self.max_samples,
                                         include_word=self.include_word,
                                         include_anagram=self.include_anagram,
                                         include_misspelling=self.include_misspelling):
-            yield word1, word2
+            yield word1, word2, similarity
 
     def _load_val(self):
         """ Yield data from validation set """
@@ -62,13 +73,13 @@ class SpellingSimilarityDataset(BaseDataset):
     def _process_data(self, data):
         """ Preprocess and transform data into sample """
         # Extract data
-        word1, word2 = data
+        word1, word2, similarity = data
 
-        # Calculate CER similarity
-        cer_similarity = 1 - (Metrics(["CER"])([word1], [word2])["CER"] / 100) 
+        # Convert string to float
+        similarity = float(similarity)
 
         # Transform data into sample
-        sample = {"input": (word1, word2), "target": cer_similarity}
+        sample = {"input": (word1, word2), "target": similarity}
         return sample
 
 

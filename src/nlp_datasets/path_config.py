@@ -76,6 +76,6 @@ misspelling_corpus_base_dir = datasets_dir + "/misspelling_corpus"
 misspelling_corpus_dir = misspelling_corpus_base_dir + "/misspellings_corpus.txt"
 # Spelling Similarity
 spelling_similarity_corpus_base_dir = datasets_dir + "/spelling_similarity_corpus"
-spelling_similarity_anagram_dir = spelling_similarity_corpus_base_dir + "/anagram_corpus.txt"
+spelling_similarity_anagrams_dir = spelling_similarity_corpus_base_dir + "/anagrams_corpus.txt"
 spelling_similarity_misspellings_dir = spelling_similarity_corpus_base_dir + "/misspellings_corpus.txt"
 spelling_similarity_words_dir = spelling_similarity_corpus_base_dir + "/words_corpus.txt"

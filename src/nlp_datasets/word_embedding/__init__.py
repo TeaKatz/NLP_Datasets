@@ -1,4 +1,7 @@
 from .SpellingSimilarityDataset import SpellingSimilarityDataset
+from .SpellingSimilarityDataset import WordSpellingSimilarityDataset
+from .SpellingSimilarityDataset import AnagramSpellingSimilarityDataset
+from .SpellingSimilarityDataset import MisspellingSpellingSimilarityDataset
 
 from .WordDistributionDataset import LocalWordDistributionDataset
 from .WordDistributionDataset import GlobalWordDistributionDataset

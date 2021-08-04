@@ -1,3 +1,5 @@
+from .SemanticSimilarityDataset import SemanticSimilarityDataset
+
 from .SpellingSimilarityDataset import SpellingSimilarityDataset
 from .SpellingSimilarityDataset import WordSpellingSimilarityDataset
 from .SpellingSimilarityDataset import AnagramSpellingSimilarityDataset

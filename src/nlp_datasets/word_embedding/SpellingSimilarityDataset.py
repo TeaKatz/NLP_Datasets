@@ -78,7 +78,7 @@ class SpellingSimilarityDataset(BaseDataset):
         similarity = float(similarity)
 
         # Transform data into sample
-        sample = {"input": (word1, word2), "target": similarity}
+        sample = {"word1": word1, "word2": word2, "similarity": similarity}
         return sample
 
 

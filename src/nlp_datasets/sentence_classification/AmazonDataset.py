@@ -71,5 +71,5 @@ class AmazonDataset(BaseDataset):
         if not self.ignore_body:
             if isinstance(body_text, str):
                 text.append(body_text)
-        sample = {"input": "\n".join(text), "target": label}
+        sample = {"text": "\n".join(text), "label": label}
         return sample

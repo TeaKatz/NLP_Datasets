@@ -167,7 +167,7 @@ class LocalWordDistributionDataset(BaseDataset):
         target_word, context_words, non_context_words = data
 
         # Transform data into sample
-        sample = {"input": {"target_word": target_word, "context_words": context_words, "non_context_words": non_context_words}}
+        sample = {"target_word": target_word, "context_words": context_words, "non_context_words": non_context_words}
         return sample
 
 
@@ -209,7 +209,7 @@ class GlobalWordDistributionDataset(BaseDataset):
         target_word, context_words = data
 
         # Transform data into sample
-        sample = {"input": {"target_word": target_word, "context_words": context_words}}
+        sample = {"target_word": target_word, "context_words": context_words}
         return sample
 
 
@@ -235,5 +235,5 @@ class WordDataset(BaseDataset):
         word = data
 
         # Transform data into sample
-        sample = {"input": word}
+        sample = {"word": word}
         return sample

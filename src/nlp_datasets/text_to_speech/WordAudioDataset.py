@@ -39,5 +39,5 @@ class WordAudioDataset(BaseDataset):
         word, audio = data
 
         # Transform data into sample
-        sample = {"input": word, "target": audio}
+        sample = {"word": word, "audio": audio}
         return sample

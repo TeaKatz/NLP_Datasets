@@ -73,5 +73,5 @@ class YahooDataset(BaseDataset):
         if not self.ignore_answer:
             if isinstance(answer_text, str):
                 text.append(answer_text)
-        sample = {"input": "\n".join(text), "target": label}
+        sample = {"text": "\n".join(text), "label": label}
         return sample

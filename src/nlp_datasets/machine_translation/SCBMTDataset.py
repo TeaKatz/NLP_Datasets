@@ -27,7 +27,6 @@ class SCBMTDataset(BaseDataset):
     local_dir = "scbmt_dataset"
 
     def __init__(self,
-                task="en2th",
                 max_samples=None,
                 train_split_ratio=0.8,
                 val_split_ratio=0.1,
@@ -35,9 +34,6 @@ class SCBMTDataset(BaseDataset):
                 random_seed=0,
                 local_dir=None):
 
-        assert task in ["en2th", "th2en"]
-
-        self.task = task
         super().__init__(max_samples, train_split_ratio, val_split_ratio, test_split_ratio, random_seed, local_dir)
 
     def _load_train(self):
@@ -62,8 +58,5 @@ class SCBMTDataset(BaseDataset):
         en_sentence, th_sentence = data
 
         # Transform data into sample
-        if self.task == "en2th":
-            sample = {"input": en_sentence, "target": th_sentence}
-        else:
-            sample = {"input": th_sentence, "target": en_sentence}
+        sample = {"english": en_sentence, "thai": th_sentence}
         return sample

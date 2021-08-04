@@ -5,7 +5,7 @@ from ..path_config import spelling_similarity_words_dir, spelling_similarity_ana
 
 def load_corpus(max_samples: int=None, include_word: bool=True, include_anagram: bool=True, include_misspelling: bool=True):
     def _load_corpus(corpus_dir, count: int=0):
-        with open(corpus_dir, "r") as f:
+        with open(corpus_dir, "r", errors="ignore") as f:
             for line in f.readlines():
                 count += 1
                 # Terminate by max_samples
@@ -14,7 +14,6 @@ def load_corpus(max_samples: int=None, include_word: bool=True, include_anagram:
                 # Read line
                 word1, word2, similarity = line.strip().split(":")
                 yield word1, word2, similarity
-        return count
 
     count = 0
     if include_word:

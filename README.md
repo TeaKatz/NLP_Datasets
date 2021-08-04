@@ -2,7 +2,6 @@
 A  repository gathers utility modules for reading datasets.
 
 ## Base Module
----
 ### BaseDataset: [[code]](https://github.com/TeaKatz/NLP_Datasets/blob/2d2ef8300e3423999ee75f5812b1484a0451f5b8/src/nlp_datasets/BaseDataset.py)
 > **CLASS** BaseDataset(max_samples=None, train_split_ratio=0.8, val_split_ratio=0.1, test_split_ratio=0.1, random_seed=0, local_dir=None)
 > >
@@ -21,7 +20,6 @@ A  repository gathers utility modules for reading datasets.
 >>**local_dir** (*str*) - Directory for saving processed dataset
 
 ## Word Embedding
----
 ### LocalWordDistributionDataset: [[code]](https://github.com/TeaKatz/NLP_Datasets/blob/2d2ef8300e3423999ee75f5812b1484a0451f5b8/src/nlp_datasets/word_embedding/WordDistributionDataset.py)
 > **CLASS** LocalWordDistributionDataset(context_size=4, context_words_num=1, non_context_words_num=5, max_samples=10000, train_split_ratio=0.9, val_split_ratio=0.1, test_split_ratio=0.0, random_seed=0, local_dir=None)
 >
@@ -74,7 +72,6 @@ A  repository gathers utility modules for reading datasets.
 >>**PARAMETERS:**
 
 ## Sentence Classification
----
 ### AmazonDataset: [[code]](https://github.com/TeaKatz/NLP_Datasets/blob/2d2ef8300e3423999ee75f5812b1484a0451f5b8/src/nlp_datasets/sentence_classification/AmazonDataset.py)
 > **CLASS** AmazonDataset(ignore_title=False, ignore_body=False, max_samples=None, train_split_ratio=0.8, val_split_ratio=0.1, test_split_ratio=0.1, random_seed=0, local_dir=None)
 >
@@ -96,7 +93,6 @@ A  repository gathers utility modules for reading datasets.
 >>**ignore_answer** (*bool*) - If `True`, include `answer text` to the output
 
 ## Machine Translation
----
 ### SCBMTDataset: [[code]](https://github.com/TeaKatz/NLP_Datasets/blob/2d2ef8300e3423999ee75f5812b1484a0451f5b8/src/nlp_datasets/machine_translation/SCBMTDataset.py)
 > **CLASS** SCBMTDataset(task="en2th", max_samples=None, train_split_ratio=0.8, val_split_ratio=0.1, test_split_ratio=0.1, random_seed=0, local_dir=None)
 >
@@ -105,7 +101,6 @@ A  repository gathers utility modules for reading datasets.
 >>**task** (*str*) - Can be either `"en2th"` or `"th2en"`
 
 ## Text-to-Speech
----
 ### WordAudioDataset: [[code]](https://github.com/TeaKatz/NLP_Datasets/blob/2d2ef8300e3423999ee75f5812b1484a0451f5b8/src/nlp_datasets/text_to_speech/WordAudioDataset.py)
 > **CLASS** WordAudioDataset(max_samples=None, train_split_ratio=0.8, val_split_ratio=0.1, test_split_ratio=0.1, random_seed=0, local_dir=None)
 >

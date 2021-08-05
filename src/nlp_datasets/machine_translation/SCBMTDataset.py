@@ -1,26 +1,19 @@
-import os
-import joblib
 import pandas as pd
 
 from ..BaseDataset import BaseDataset
 from ..path_config import SCBMT_DIRS
 
 
-def load_corpus(max_samples=None):
-    en_sentences = []
-    th_sentences = []
-    for train_dir in SCBMT_DIRS:
-        dataframe = pd.read_csv(train_dir)
-        en_sentences.extend(dataframe["en_text"].to_list())
-        th_sentences.extend(dataframe["th_text"].to_list())
-        # Limit samples size
-        if max_samples is not None and len(en_sentences) >= max_samples:
-            break
-    # Limit samples size
-    if max_samples is not None:
-        en_sentences = en_sentences[:max_samples]
-        th_sentences = th_sentences[:max_samples]
-    return en_sentences, th_sentences
+def load_corpus(max_samples: int=None):
+    count = 0
+    for dir in SCBMT_DIRS:
+        dataframe = pd.read_csv(dir)
+        for en_sentence, th_sentence in zip(dataframe["en_text"], dataframe["th_text"]):
+            count += 1
+            # Terminate by max_samples:
+            if (max_samples is not None) and count > max_samples:
+                break
+            yield en_sentence, th_sentence
 
 
 class SCBMTDataset(BaseDataset):
@@ -37,14 +30,7 @@ class SCBMTDataset(BaseDataset):
         super().__init__(max_samples, train_split_ratio, val_split_ratio, test_split_ratio, random_seed, local_dir)
 
     def _load_train(self):
-        if os.path.exists(os.path.join(self.local_dir, "loaded_train_scb.pkl")):
-            # Load from local disk
-            en_sentences, th_sentences = joblib.load(os.path.join(self.local_dir, "loaded_train_scb.pkl"))
-        else:
-            en_sentences, th_sentences = load_corpus(max_samples=self.max_samples)
-            joblib.dump((en_sentences, th_sentences), os.path.join(self.local_dir, "loaded_train_scb.pkl"))
-
-        for en_sentence, th_sentence in zip(en_sentences, th_sentences):
+        for en_sentence, th_sentence in load_corpus(max_samples=self.max_samples):
             yield en_sentence, th_sentence
 
     def _load_val(self):

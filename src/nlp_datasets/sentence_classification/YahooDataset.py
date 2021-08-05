@@ -1,3 +1,5 @@
+import pandas as pd
+
 from ..BaseDataset import BaseDataset
 from ..path_config import YAHOO_TRAIN_DIR, YAHOO_TEST_DIR
 
@@ -5,20 +7,13 @@ from ..path_config import YAHOO_TRAIN_DIR, YAHOO_TEST_DIR
 def load_corpus(max_samples=None, test_set=False):
     def _load_corpus(corpus_dir):
         count = 0
-        with open(corpus_dir, "r", errors="ignore") as f:
-            for line in f.readlines():
-                # Terminate by max_samples
-                count += 1
-                if (max_samples is not None) and (count > max_samples):
-                    break
-                # Remove '\n'
-                line = line[:-1]
-                # Split by ',' and remove '"' and start and end
-                label = line.split(",")[0][1:-1]
-                title_text = line.split(",")[1][1:-1]
-                content_text = line.split(",")[2][1:-1]
-                answer_text = line.split(",")[3][1:-1]
-                yield label, title_text, content_text, answer_text
+        dataframe = pd.read_csv(corpus_dir, header=None)
+        for label, title_text, content_text, answer_text in zip(dataframe.iloc[:, 0], dataframe.iloc[:, 1], dataframe.iloc[:, 2], dataframe.iloc[:, 3]):
+            count += 1
+            # Terminate by max_samples
+            if (max_samples is not None) and (count > max_samples):
+                break
+            yield label, title_text, content_text, answer_text
 
     if test_set:
         return _load_corpus(YAHOO_TEST_DIR)

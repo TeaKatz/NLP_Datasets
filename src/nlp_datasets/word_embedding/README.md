@@ -1,5 +1,4 @@
-## Word Embedding
-### LocalWordDistributionDataset: [[code]](https://github.com/TeaKatz/NLP_Datasets/blob/main/src/nlp_datasets/word_embedding/WordDistributionDataset.py)
+## WordDistributionDataset: [[code]](https://github.com/TeaKatz/NLP_Datasets/blob/main/src/nlp_datasets/word_embedding/WordDistributionDataset.py)
 > **CLASS** LocalWordDistributionDataset(context_size=4, context_words_num=1, non_context_words_num=5, max_samples=10000, train_split_ratio=0.9, val_split_ratio=0.1, test_split_ratio=0.0, random_seed=0, local_dir=None)
 >
 >>**PARAMETERS:**
@@ -19,7 +18,6 @@
 >>}
 >>```
 
-### GlobalWordDistributionDataset: [[code]](https://github.com/TeaKatz/NLP_Datasets/blob/main/src/nlp_datasets/word_embedding/WordDistributionDataset.py)
 > **CLASS** GlobalWordDistributionDataset(context_size=4, context_words_num=100, max_samples=None, train_split_ratio=0.9, val_split_ratio=0.1, test_split_ratio=0.0, random_seed=0, local_dir=None)
 >
 >>**PARAMETERS:**
@@ -36,7 +34,6 @@
 >>}
 >>```
 
-### WordDataset: [[code]](https://github.com/TeaKatz/NLP_Datasets/blob/main/src/nlp_datasets/word_embedding/WordDistributionDataset.py)
 > **CLASS** WordDataset(max_samples=None, train_split_ratio=0.8, val_split_ratio=0.1, test_split_ratio=0.1, random_seed=0, local_dir=None)
 >
 >>**PARAMETERS:**
@@ -48,7 +45,7 @@
 >>}
 >>```
 
-### SpellingSimilarityDataset: [[code]](https://github.com/TeaKatz/NLP_Datasets/blob/main/src/nlp_datasets/word_embedding/SpellingSimilarityDataset.py)
+## SpellingSimilarityDataset: [[code]](https://github.com/TeaKatz/NLP_Datasets/blob/main/src/nlp_datasets/word_embedding/SpellingSimilarityDataset.py)
 > **CLASS** SpellingSimilarityDataset(include_word=True, include_anagram=True, include_misspelling=True, max_samples=None, train_split_ratio=0.8, val_split_ratio=0.1, test_split_ratio=0.1, random_seed=0, local_dir=None)
 >
 >>**PARAMETERS:**
@@ -68,7 +65,6 @@
 >>}
 >>```
 
-### WordSpellingSimilarityDataset: [[code]](https://github.com/TeaKatz/NLP_Datasets/blob/main/src/nlp_datasets/word_embedding/SpellingSimilarityDataset.py)
 > **CLASS** WordSpellingSimilarityDataset(max_samples=None, train_split_ratio=0.8, val_split_ratio=0.1, test_split_ratio=0.1, random_seed=0, local_dir=None)
 >
 >>**PARAMETERS:**
@@ -82,7 +78,6 @@
 >>}
 >>```
 
-### AnagramSpellingSimilarityDataset: [[code]](https://github.com/TeaKatz/NLP_Datasets/blob/main/src/nlp_datasets/word_embedding/SpellingSimilarityDataset.py)
 > **CLASS** AnagramSpellingSimilarityDataset(max_samples=None, train_split_ratio=0.8, val_split_ratio=0.1, test_split_ratio=0.1, random_seed=0, local_dir=None)
 >
 >>**PARAMETERS:**
@@ -96,7 +91,6 @@
 >>}
 >>```
 
-### MisspellingSpellingSimilarityDataset: [[code]](https://github.com/TeaKatz/NLP_Datasets/blob/main/src/nlp_datasets/word_embedding/SpellingSimilarityDataset.py)
 > **CLASS** MisspellingSpellingSimilarityDataset(max_samples=None, train_split_ratio=0.8, val_split_ratio=0.1, test_split_ratio=0.1, random_seed=0, local_dir=None)
 >
 >>**PARAMETERS:**
@@ -110,7 +104,7 @@
 >>}
 >>```
 
-### SemanticSimilarityDataset: [[code]](https://github.com/TeaKatz/NLP_Datasets/blob/main/src/nlp_datasets/word_embedding/SemanticSimilarityDataset.py)
+## SemanticSimilarityDataset: [[code]](https://github.com/TeaKatz/NLP_Datasets/blob/main/src/nlp_datasets/word_embedding/SemanticSimilarityDataset.py)
 > **CLASS** SemanticSimilarityDataset(max_samples=None, train_split_ratio=0.8, val_split_ratio=0.1, test_split_ratio=0.1, random_seed=0, local_dir=None)
 >
 >>**PARAMETERS:**

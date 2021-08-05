@@ -1,48 +1,28 @@
 # Word Embedding Dataset
-## WordDistributionDataset: [[code]](https://github.com/TeaKatz/NLP_Datasets/blob/main/src/nlp_datasets/word_embedding/WordDistributionDataset.py)
-> **CLASS** LocalWordDistributionDataset(context_size=4, context_words_num=1, non_context_words_num=5, max_samples=10000, train_split_ratio=0.9, val_split_ratio=0.1, test_split_ratio=0.0, random_seed=0, local_dir=None)
->
->>**PARAMETERS:**
->>
->>**context_size** (*int*) - Size of context
->>
->>**context_words_num** (*int*) - Number of context words
->>
->>**non_context_words_num** (*int*) - Number of non-context words
->
->>**SAMPLE:**
->>```
->>{
->>    "target_word": (str), 
->>    "context_words": (list[str]), 
->>    "non_context_words": (list[str])
->>}
->>```
 
-> **CLASS** GlobalWordDistributionDataset(context_size=4, context_words_num=100, max_samples=None, train_split_ratio=0.9, val_split_ratio=0.1, test_split_ratio=0.0, random_seed=0, local_dir=None)
+## SemanticSimilarityDataset: [[code]](https://github.com/TeaKatz/NLP_Datasets/blob/main/src/nlp_datasets/word_embedding/SemanticSimilarityDataset.py)
+> **CLASS** WordSim353Dataset(max_samples=None, train_split_ratio=0.8, val_split_ratio=0.1, test_split_ratio=0.1, random_seed=0, local_dir=None)
 >
 >>**PARAMETERS:**
 >>
->>**context_size** (*int*) - Size of context
+>>**max_samples** (*int*) - Maximum number of samples
 >>
->>**context_words_num** (*int*) - Number of context words
+>>**train_split_ratio** (*float*) - Ratio of training samples
+>>
+>>**val_split_ratio** (*float*) - Ratio of validation samples
+>>
+>>**test_split_ratio** (*float*) - Ratio of test samples
+>>
+>>**random_seed** (*int*) - Random seed of spliting samples
+>>
+>>**local_dir** (*str*) - Directory for saving split samples
 >
 >>**SAMPLE:**
 >>```
 >>{
->>    "target_word": (str), 
->>    "context_words": (list[tuple[str, float]])
->>}
->>```
-
-> **CLASS** WordDataset(max_samples=None, train_split_ratio=0.8, val_split_ratio=0.1, test_split_ratio=0.1, random_seed=0, local_dir=None)
->
->>**PARAMETERS:**
->
->>**SAMPLE:**
->>```
->>{
->>    "word": (str)
+>>    "word1": (str),
+>>    "word2": (str),
+>>    "similarity": (float)
 >>}
 >>```
 
@@ -105,16 +85,49 @@
 >>}
 >>```
 
-## SemanticSimilarityDataset: [[code]](https://github.com/TeaKatz/NLP_Datasets/blob/main/src/nlp_datasets/word_embedding/SemanticSimilarityDataset.py)
-> **CLASS** SemanticSimilarityDataset(max_samples=None, train_split_ratio=0.8, val_split_ratio=0.1, test_split_ratio=0.1, random_seed=0, local_dir=None)
+## WordDistributionDataset: [[code]](https://github.com/TeaKatz/NLP_Datasets/blob/main/src/nlp_datasets/word_embedding/WordDistributionDataset.py)
+> **CLASS** LocalWordDistributionDataset(context_size=4, context_words_num=1, non_context_words_num=5, max_samples=10000, train_split_ratio=0.9, val_split_ratio=0.1, test_split_ratio=0.0, random_seed=0, local_dir=None)
+>
+>>**PARAMETERS:**
+>>
+>>**context_size** (*int*) - Size of context
+>>
+>>**context_words_num** (*int*) - Number of context words
+>>
+>>**non_context_words_num** (*int*) - Number of non-context words
+>
+>>**SAMPLE:**
+>>```
+>>{
+>>    "target_word": (str), 
+>>    "context_words": (list[str]), 
+>>    "non_context_words": (list[str])
+>>}
+>>```
+
+> **CLASS** GlobalWordDistributionDataset(context_size=4, context_words_num=100, max_samples=None, train_split_ratio=0.9, val_split_ratio=0.1, test_split_ratio=0.0, random_seed=0, local_dir=None)
+>
+>>**PARAMETERS:**
+>>
+>>**context_size** (*int*) - Size of context
+>>
+>>**context_words_num** (*int*) - Number of context words
+>
+>>**SAMPLE:**
+>>```
+>>{
+>>    "target_word": (str), 
+>>    "context_words": (list[tuple[str, float]])
+>>}
+>>```
+
+> **CLASS** WordDataset(max_samples=None, train_split_ratio=0.8, val_split_ratio=0.1, test_split_ratio=0.1, random_seed=0, local_dir=None)
 >
 >>**PARAMETERS:**
 >
 >>**SAMPLE:**
 >>```
 >>{
->>    "word1": (str),
->>    "word2": (str),
->>    "similarity": (float)
+>>    "word": (str)
 >>}
 >>```

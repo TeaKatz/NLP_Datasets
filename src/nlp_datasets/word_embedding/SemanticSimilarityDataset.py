@@ -1,10 +1,10 @@
 from ..BaseDataset import BaseDataset
-from ..path_config import SEMANTIC_SIMILARITY_DIR
+from ..path_config import SEMANTIC_SIMILARITY_WORDSIM353_DIR
 
 
-def load_corpus(max_samples: int=None):
+def load_wordsim353(max_samples: int=None):
     count = 0
-    with open(SEMANTIC_SIMILARITY_DIR, "r") as f:
+    with open(SEMANTIC_SIMILARITY_WORDSIM353_DIR, "r") as f:
         for i, line in enumerate(f.readlines()):
             count += 1
             # Terminate by max_samples
@@ -21,12 +21,12 @@ def load_corpus(max_samples: int=None):
             yield word1, word2, similarity
 
 
-class SemanticSimilarityDataset(BaseDataset):
+class WordSim353Dataset(BaseDataset):
     local_dir = "semantic_similarity_dataset"
 
     def _load_train(self):
         """ Yield data from training set """
-        for word1, word2, similarity in load_corpus(max_samples=self.max_samples):
+        for word1, word2, similarity in load_wordsim353(max_samples=self.max_samples):
             yield word1, word2, similarity
 
     def _load_val(self):

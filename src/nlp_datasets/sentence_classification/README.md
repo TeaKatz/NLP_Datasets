@@ -1,3 +1,5 @@
+# Sentence Classification Dataset
+
 ## AmazonDataset: [[code]](https://github.com/TeaKatz/NLP_Datasets/blob/main/src/nlp_datasets/sentence_classification/AmazonDataset.py)
 > **CLASS** AmazonDataset(ignore_title=False, ignore_body=False, max_samples=None, train_split_ratio=0.8, val_split_ratio=0.1, test_split_ratio=0.1, random_seed=0, local_dir=None)
 >
@@ -6,6 +8,18 @@
 >>**ignore_title** (*bool*) - If `True`, include `title text` to the output
 >>
 >>**ignore_body** (*bool*) - If `True`, include `body text` to the output
+>>
+>>**max_samples** (*int*) - Maximum number of samples
+>>
+>>**train_split_ratio** (*float*) - Ratio of training samples
+>>
+>>**val_split_ratio** (*float*) - Ratio of validation samples
+>>
+>>**test_split_ratio** (*float*) - Ratio of test samples
+>>
+>>**random_seed** (*int*) - Random seed of spliting samples
+>>
+>>**local_dir** (*str*) - Directory for saving split samples
 >
 >>**SAMPLE:**
 >>```

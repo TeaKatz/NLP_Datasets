@@ -22,11 +22,12 @@ A  repository gathers utility modules for reading datasets.
     git clone https://github.com/TeaKatz/NLP_Datasets
     cd NLP_Datasets
     pip install --editable .
+Download [datasets](https://drive.google.com/drive/folders/1DixwXun7Of9iHDvG3kVzoomPRxfb_O9k) and place it in *NLP_Datasets/*
 
 ## Uninstallation
     pip uninstall nlp-datasets
 
-## Examples
+## Example
     from nlp_datasets import SCBMTDataset
     from torch.utils.data import DataLoader
 

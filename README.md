@@ -1,21 +1,21 @@
 # NLP_Datasets
 A  repository gathers utility modules for reading datasets.
 - [Word Embedding Dataset](https://github.com/TeaKatz/NLP_Datasets/tree/main/src/nlp_datasets/word_embedding)
-  - [SemanticSimilarityDataset](https://github.com/TeaKatz/NLP_Datasets/tree/main/src/nlp_datasets/word_embedding#semanticsimilaritydataset)
-  - [SpellingSimilarityDataset](https://github.com/TeaKatz/NLP_Datasets/tree/main/src/nlp_datasets/word_embedding#spellingsimilaritydataset)
-  - [WordDistributionDataset](https://github.com/TeaKatz/NLP_Datasets/tree/main/src/nlp_datasets/word_embedding#worddistributiondataset)
+  - [SemanticSimilarityDataset](https://github.com/TeaKatz/NLP_Datasets/tree/main/src/nlp_datasets/word_embedding#semanticsimilaritydataset-code)
+  - [SpellingSimilarityDataset](https://github.com/TeaKatz/NLP_Datasets/tree/main/src/nlp_datasets/word_embedding#spellingsimilaritydataset-code)
+  - [WordDistributionDataset](https://github.com/TeaKatz/NLP_Datasets/tree/main/src/nlp_datasets/word_embedding#worddistributiondataset-code)
 - [Sentence Classification Dataset](https://github.com/TeaKatz/NLP_Datasets/tree/main/src/nlp_datasets/sentence_classification)
-  - [AmazonDataset](https://github.com/TeaKatz/NLP_Datasets/tree/main/src/nlp_datasets/sentence_classification#amazondataset)
-  - [YahooDataset](https://github.com/TeaKatz/NLP_Datasets/tree/main/src/nlp_datasets/sentence_classification#yahoodataset)
+  - [AmazonDataset](https://github.com/TeaKatz/NLP_Datasets/tree/main/src/nlp_datasets/sentence_classification#amazondataset-code)
+  - [YahooDataset](https://github.com/TeaKatz/NLP_Datasets/tree/main/src/nlp_datasets/sentence_classification#yahoodataset-code)
 - [Machine Translation Dataset](https://github.com/TeaKatz/NLP_Datasets/tree/main/src/nlp_datasets/machine_translation)
-  - [SCBMTDataset](https://github.com/TeaKatz/NLP_Datasets/tree/main/src/nlp_datasets/machine_translation#scbmtdataset)
+  - [SCBMTDataset](https://github.com/TeaKatz/NLP_Datasets/tree/main/src/nlp_datasets/machine_translation#scbmtdataset-code)
 - [Text-to-Speech Dataset](https://github.com/TeaKatz/NLP_Datasets/tree/main/src/nlp_datasets/text_to_speech)
-  - [WordAudioDataset](https://github.com/TeaKatz/NLP_Datasets/tree/main/src/nlp_datasets/text_to_speech#wordaudiodataset)
+  - [WordAudioDataset](https://github.com/TeaKatz/NLP_Datasets/tree/main/src/nlp_datasets/text_to_speech#wordaudiodataset-code)
 
 ## Requirements
 - NumPy
 - Pandas
-- PyTorch
+- PyTorch (1.9.0 Recommended)
 - Joblib
 
 ## Installation

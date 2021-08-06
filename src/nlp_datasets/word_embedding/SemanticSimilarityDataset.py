@@ -1,5 +1,29 @@
+import os
+import zipfile
+import urllib.request
+
+from progressist import ProgressBar
+
 from ..BaseDataset import BaseDataset
-from ..path_config import SEMANTIC_SIMILARITY_WORDSIM353_DIR
+from ..path_config import SEMANTIC_SIMILARITY_WORDSIM353_DIR, SEMANTIC_SIMILARITY_BASE_DIR, BASE_DIR
+from ..url_config import WORDSIM353_URL
+
+
+def download_wordsim353():
+    if not os.path.exists(SEMANTIC_SIMILARITY_BASE_DIR):
+        os.makedirs(SEMANTIC_SIMILARITY_BASE_DIR)
+
+    if os.path.exists(SEMANTIC_SIMILARITY_WORDSIM353_DIR):
+        return
+    # Download WordSim353
+    print(f"Downloading: {WORDSIM353_URL}")
+    bar = ProgressBar(template="|{animation}| {done:B}/{total:B}")
+    local_dir, _ = urllib.request.urlretrieve(WORDSIM353_URL, BASE_DIR + "/wordsim353.zip", reporthook=bar.on_urlretrieve)
+    # Unzip file
+    with zipfile.ZipFile(local_dir, 'r') as zip_ref:
+        zip_ref.extractall(SEMANTIC_SIMILARITY_BASE_DIR + "/wordsim353")
+    # Remove zip file
+    os.remove(BASE_DIR + "/wordsim353.zip")
 
 
 def load_wordsim353(max_samples: int=None):
@@ -22,7 +46,18 @@ def load_wordsim353(max_samples: int=None):
 
 
 class WordSim353Dataset(BaseDataset):
-    local_dir = "semantic_similarity_dataset"
+    local_dir = "wordsim353_dataset"
+
+    def __init__(self, 
+                max_samples=None, 
+                train_split_ratio=0.8,
+                val_split_ratio=0.1,
+                test_split_ratio=0.1,
+                random_seed=0, 
+                local_dir=None):
+
+        download_wordsim353()
+        super().__init__(max_samples, train_split_ratio, val_split_ratio, test_split_ratio, random_seed, local_dir)
 
     def _load_train(self):
         """ Yield data from training set """

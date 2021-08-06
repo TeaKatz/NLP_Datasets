@@ -1,6 +1,32 @@
-from ..BaseDataset import BaseDataset
-from ..path_config import SPELLING_SIMILARITY_WORDS_DIR, SPELLING_SIMILARITY_ANAGRAMS_DIR, SPELLING_SIMILARITY_MISSPELLINGS_DIR
+import os
 
+from ..BaseDataset import BaseDataset
+from ..utilities import download_file_from_google_drive
+from ..path_config import SPELLING_SIMILARITY_BASE_DIR, SPELLING_SIMILARITY_ANAGRAMS_DIR, SPELLING_SIMILARITY_MISSPELLINGS_DIR, SPELLING_SIMILARITY_WORDS_DIR
+from ..url_config import SPELLING_SIMILARITY_ANAGRAMS_ID, SPELLING_SIMILARITY_ANAGRAMS_URL
+from ..url_config import SPELLING_SIMILARITY_MISSPELLINGS_ID, SPELLING_SIMILARITY_MISSPELLINGS_URL
+from ..url_config import SPELLING_SIMILARITY_WORDS_ID, SPELLING_SIMILARITY_WORDS_URL
+
+
+def download_corpus():
+    if not os.path.exists(SPELLING_SIMILARITY_BASE_DIR):
+        os.makedirs(SPELLING_SIMILARITY_BASE_DIR)
+
+    if not os.path.exists(SPELLING_SIMILARITY_ANAGRAMS_DIR):
+        # Download anagram_corpus.txt
+        print(f"Downloading: {SPELLING_SIMILARITY_ANAGRAMS_URL}")
+        download_file_from_google_drive(SPELLING_SIMILARITY_ANAGRAMS_ID, SPELLING_SIMILARITY_ANAGRAMS_DIR)
+
+    if not os.path.exists(SPELLING_SIMILARITY_MISSPELLINGS_DIR):
+        # Download misspellings_corpus.txt
+        print(f"Downloading: {SPELLING_SIMILARITY_MISSPELLINGS_URL}")
+        download_file_from_google_drive(SPELLING_SIMILARITY_MISSPELLINGS_ID, SPELLING_SIMILARITY_MISSPELLINGS_DIR)
+
+    if not os.path.exists(SPELLING_SIMILARITY_WORDS_DIR):
+        # Download words_corpus.txt
+        print(f"Downloading: {SPELLING_SIMILARITY_WORDS_URL}")
+        download_file_from_google_drive(SPELLING_SIMILARITY_WORDS_ID, SPELLING_SIMILARITY_WORDS_DIR)
+    
 
 def load_corpus(max_samples: int=None, include_word: bool=True, include_anagram: bool=True, include_misspelling: bool=True):
     def _load_corpus(corpus_dir):
@@ -51,6 +77,7 @@ class SpellingSimilarityDataset(BaseDataset):
         self.include_word = include_word
         self.include_anagram = include_anagram
         self.include_misspelling = include_misspelling
+        download_corpus()
         super().__init__(max_samples, train_split_ratio, val_split_ratio, test_split_ratio, random_seed, local_dir)
 
     def _load_train(self):

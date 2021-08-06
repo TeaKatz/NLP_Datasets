@@ -5,7 +5,22 @@ import joblib
 import numpy as np
 
 from ..BaseDataset import BaseDataset
+from ..utilities import download_file_from_google_drive
 from ..path_config import WORD_DISTRIBUTION_META_DIR, WORD_DISTRIBUTION_BASE_DIR
+from ..url_config import WORD_DISTRIBUTION_ID, WORD_DISTRIBUTION_URL
+
+
+def download_word_distribution():
+    if not os.path.exists(WORD_DISTRIBUTION_BASE_DIR):
+        os.makedirs(WORD_DISTRIBUTION_BASE_DIR)
+
+    if os.path.exists(WORD_DISTRIBUTION_META_DIR):
+        return
+
+    if not os.path.exists(WORD_DISTRIBUTION_META_DIR):
+        # Download anagram_corpus.txt
+        print(f"Downloading: {WORD_DISTRIBUTION_URL}")
+        download_file_from_google_drive(WORD_DISTRIBUTION_ID, WORD_DISTRIBUTION_META_DIR)
 
 
 def process_meta_word_distribution(context_size: int=4):
@@ -143,6 +158,7 @@ class LocalWordDistributionDataset(BaseDataset):
         self.context_size = context_size
         self.context_words_num = context_words_num
         self.non_context_words_num = non_context_words_num
+        download_word_distribution()
         super().__init__(max_samples, train_split_ratio, val_split_ratio, test_split_ratio, random_seed, local_dir)
 
     def _load_train(self):
@@ -186,6 +202,7 @@ class GlobalWordDistributionDataset(BaseDataset):
 
         self.context_size = context_size
         self.context_words_num = context_words_num
+        download_word_distribution()
         super().__init__(max_samples, train_split_ratio, val_split_ratio, test_split_ratio, random_seed, local_dir)
 
     def _load_train(self):
@@ -215,6 +232,18 @@ class GlobalWordDistributionDataset(BaseDataset):
 
 class WordDataset(BaseDataset):
     local_dir = "word_dataset"
+
+    def __init__(self, 
+                max_samples=None, 
+                train_split_ratio=0.8,
+                val_split_ratio=0.1,
+                test_split_ratio=0.1,
+                random_seed=0, 
+                local_dir=None):
+
+        download_word_distribution()
+        super().__init__(max_samples, train_split_ratio, val_split_ratio, test_split_ratio, random_seed, local_dir)
+
 
     def _load_train(self):
         """ Yield data from training set """

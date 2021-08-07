@@ -1,10 +1,35 @@
+import os
+import zipfile
+import urllib.request
+
+from progressist import ProgressBar
+
 from ..BaseDataset import BaseDataset
-from ..path_config import AMAZON_DIRS
+from ..path_config import AMAZON_DIRS, AMAZON_BASE_DIR, BASE_DIR
+from ..url_config import AMAZON_URLS
 
 
 star_rating_col = 7
 review_headline_col = 12
 review_body_col = 13
+
+
+def download_amazon():
+    if not os.path.exists(AMAZON_BASE_DIR):
+        os.makedirs(AMAZON_BASE_DIR)
+
+    for amazon_url in AMAZON_URLS:
+        amazon_dir = AMAZON_BASE_DIR + "/" + amazon_url.split("/")[-1].replace(".gz", "")
+        if not os.path.exists(amazon_dir):
+            # Download Amazon
+            print(f"Downloading: {amazon_url}")
+            bar = ProgressBar(template="|{animation}| {done:B}/{total:B}")
+            local_dir, _ = urllib.request.urlretrieve(amazon_url, amazon_dir, reporthook=bar.on_urlretrieve)
+            # # Unzip file
+            # with zipfile.ZipFile(local_dir, 'r') as zip_ref:
+            #     zip_ref.extractall(AMAZON_BASE_DIR)
+            # # Remove zip file
+            # os.remove(AMAZON_BASE_DIR + "/" + amazon_dir + ".gz")
 
 
 def load_corpus(max_samples=None):
@@ -43,6 +68,7 @@ class AmazonDataset(BaseDataset):
 
         self.ignore_title = ignore_title
         self.ignore_body = ignore_body
+        download_amazon()
         super().__init__(max_samples, train_split_ratio, val_split_ratio, test_split_ratio, random_seed, local_dir)
 
     def _load_train(self):

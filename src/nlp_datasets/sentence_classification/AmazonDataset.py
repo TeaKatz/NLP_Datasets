@@ -1,6 +1,8 @@
 import os
-import zipfile
 import urllib.request
+
+import gzip
+import shutil
 
 from progressist import ProgressBar
 
@@ -24,12 +26,13 @@ def download_amazon():
             # Download Amazon
             print(f"Downloading: {amazon_url}")
             bar = ProgressBar(template="|{animation}| {done:B}/{total:B}")
-            local_dir, _ = urllib.request.urlretrieve(amazon_url, amazon_dir, reporthook=bar.on_urlretrieve)
-            # # Unzip file
-            # with zipfile.ZipFile(local_dir, 'r') as zip_ref:
-            #     zip_ref.extractall(AMAZON_BASE_DIR)
-            # # Remove zip file
-            # os.remove(AMAZON_BASE_DIR + "/" + amazon_dir + ".gz")
+            _ = urllib.request.urlretrieve(amazon_url, amazon_dir + ".gz", reporthook=bar.on_urlretrieve)
+            # Unzip file
+            with gzip.open(amazon_dir + ".gz", "rb") as f_in:
+                with open(amazon_dir, "wb") as f_out:
+                    shutil.copyfileobj(f_in, f_out)
+            # Remove zip file
+            os.remove(amazon_dir + ".gz")
 
 
 def load_corpus(max_samples=None):

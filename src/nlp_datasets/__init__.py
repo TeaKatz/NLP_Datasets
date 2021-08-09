@@ -4,6 +4,7 @@ from .sentence_classification import AmazonDataset
 from .sentence_classification import YahooDataset
 
 from .text_to_speech import WordAudioDataset
+from .text_to_speech import WordAudioWithNegativeSamples
 
 from .word_embedding import WordSim353Dataset
 from .word_embedding import SpellingSimilarityDataset

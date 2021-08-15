@@ -1,2 +1,4 @@
 from .WordAudioDataset import WordAudioDataset
 from .WordAudioDataset import WordAudioWithNegativeSamples
+
+from .Word2SpeechDataset import Word2SpeechDataset

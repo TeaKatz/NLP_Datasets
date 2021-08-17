@@ -35,7 +35,7 @@ def download_corpus():
         # Download indexing
         print(f"Downloading: {WORD_TO_SPEECH_ANAGRAMS_INDEX_URL}")
         download_file_from_google_drive(WORD_TO_SPEECH_ANAGRAMS_INDEX_ID, WORD_TO_SPEECH_ANAGRAMS_BASE_DIR + "/indexing.txt")
-    if not os.path.exists(WORD_TO_SPEECH_ANAGRAMS_BASE_DIR + "/data"):
+    if not os.path.exists(WORD_TO_SPEECH_ANAGRAMS_BASE_DIR + "/audios"):
         # Download data
         print(f"Downloading: {WORD_TO_SPEECH_ANAGRAMS_DATA_URL}")
         download_file_from_google_drive(WORD_TO_SPEECH_ANAGRAMS_DATA_ID, WORD_TO_SPEECH_ANAGRAMS_BASE_DIR + "/data.zip")
@@ -53,7 +53,7 @@ def download_corpus():
         # Download indexing
         print(f"Downloading: {WORD_TO_SPEECH_MISSPELLINGS_INDEX_URL}")
         download_file_from_google_drive(WORD_TO_SPEECH_MISSPELLINGS_INDEX_ID, WORD_TO_SPEECH_MISSPELLINGS_BASE_DIR + "/indexing.txt")
-    if not os.path.exists(WORD_TO_SPEECH_MISSPELLINGS_BASE_DIR + "/data"):
+    if not os.path.exists(WORD_TO_SPEECH_MISSPELLINGS_BASE_DIR + "/audios"):
         # Download data
         print(f"Downloading: {WORD_TO_SPEECH_MISSPELLINGS_DATA_URL}")
         download_file_from_google_drive(WORD_TO_SPEECH_MISSPELLINGS_DATA_ID, WORD_TO_SPEECH_MISSPELLINGS_BASE_DIR + "/data.zip")
@@ -71,7 +71,7 @@ def download_corpus():
         # Download indexing
         print(f"Downloading: {WORD_TO_SPEECH_WORDS_INDEX_URL}")
         download_file_from_google_drive(WORD_TO_SPEECH_WORDS_INDEX_ID, WORD_TO_SPEECH_WORDS_BASE_DIR + "/indexing.txt")
-    if not os.path.exists(WORD_TO_SPEECH_WORDS_BASE_DIR + "/data"):
+    if not os.path.exists(WORD_TO_SPEECH_WORDS_BASE_DIR + "/audios"):
         # Download data
         print(f"Downloading: {WORD_TO_SPEECH_WORDS_DATA_URL}")
         download_file_from_google_drive(WORD_TO_SPEECH_WORDS_DATA_ID, WORD_TO_SPEECH_WORDS_BASE_DIR + "/data.zip")

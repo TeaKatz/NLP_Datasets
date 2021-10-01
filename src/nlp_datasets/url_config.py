@@ -80,3 +80,5 @@ WORD_TO_SPEECH_WORDS_DATA_ID = "1x3kUP0Mwc2s8xpLmiQcRSbSl5w69-hFf"
 WORD_TO_SPEECH_WORDS_DATA_URL = "https://drive.google.com/file/d/1x3kUP0Mwc2s8xpLmiQcRSbSl5w69-hFf/view?usp=sharing"
 WORD_TO_SPEECH_WORDS_INDEX_ID = "1nywXt-ANatfUGmZ3J51L9jnnDcoCS6I5"
 WORD_TO_SPEECH_WORDS_INDEX_URL = "https://drive.google.com/file/d/1nywXt-ANatfUGmZ3J51L9jnnDcoCS6I5/view?usp=sharing"
+
+STS_URL = "http://ixa2.si.ehu.es/stswiki/images/4/48/Stsbenchmark.tar.gz"

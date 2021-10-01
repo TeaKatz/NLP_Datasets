@@ -87,3 +87,8 @@ SPELLING_SIMILARITY_WORDS_DIR = SPELLING_SIMILARITY_BASE_DIR + "/words_corpus.tx
 # Semantic Similarity
 SEMANTIC_SIMILARITY_BASE_DIR = BASE_DIR + "/semantic_similarity_corpus"
 SEMANTIC_SIMILARITY_WORDSIM353_DIR = SEMANTIC_SIMILARITY_BASE_DIR + "/wordsim353/combined.csv"
+# STS (Semantic Textual Similarity)
+STS_BASE_DIR = BASE_DIR + "/stsbenchmark"
+STS_TRAIN_DIR = STS_BASE_DIR + "/sts-train.csv"
+STS_VAL_DIR = STS_BASE_DIR + "/sts-dev.csv"
+STS_TEST_DIR = STS_BASE_DIR + "/sts-test.csv"

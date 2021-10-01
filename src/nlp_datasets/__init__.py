@@ -2,6 +2,7 @@ from .machine_translation import SCBMTDataset
 
 from .sentence_classification import AmazonDataset
 from .sentence_classification import YahooDataset
+from .sentence_classification import STSDataset
 
 from .text_to_speech import WordAudioDataset
 from .text_to_speech import WordAudioWithNegativeSamples

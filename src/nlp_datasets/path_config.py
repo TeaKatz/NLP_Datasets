@@ -92,3 +92,13 @@ STS_BASE_DIR = BASE_DIR + "/stsbenchmark"
 STS_TRAIN_DIR = STS_BASE_DIR + "/sts-train.csv"
 STS_VAL_DIR = STS_BASE_DIR + "/sts-dev.csv"
 STS_TEST_DIR = STS_BASE_DIR + "/sts-test.csv"
+# SNLI
+SNLI_BASE_DIR = BASE_DIR + "/snli"
+SNLI_TRAIN_DIR = SNLI_BASE_DIR + "/snli_1.0_train.txt"
+SNLI_VAL_DIR = SNLI_BASE_DIR + "/snli_1.0_dev.txt"
+SNLI_TEST_DIR = SNLI_BASE_DIR + "/snli_1.0_test.txt"
+# MultiNLI
+MNLI_BASE_DIR = BASE_DIR + "/multinli"
+MNLI_TRAIN_DIR = MNLI_BASE_DIR + "/multinli_1.0_train.txt"
+MNLI_VAL_DIR = MNLI_BASE_DIR + "/multinli_1.0_dev_matched.txt"
+MNLI_TEST_DIR = MNLI_BASE_DIR + "/multinli_1.0_dev_mismatched.txt"

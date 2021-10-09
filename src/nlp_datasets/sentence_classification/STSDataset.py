@@ -32,6 +32,9 @@ def load_sts(max_samples=None, val_set=False, test_set=False):
         count = 0
         with open(corpus_dir, "r") as f:
             for line in f.readlines():
+                # Skip if empty line
+                if line == "": continue
+
                 count += 1
                 # Terminate by max_samples
                 if (max_samples is not None) and (count > max_samples):

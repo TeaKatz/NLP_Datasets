@@ -3,6 +3,9 @@ from .machine_translation import SCBMTDataset
 from .sentence_classification import AmazonDataset
 from .sentence_classification import YahooDataset
 from .sentence_classification import STSDataset
+from .sentence_classification import SNLIDataset
+from .sentence_classification import MNLIDataset
+from .sentence_classification import NLIDataset
 
 from .text_to_speech import WordAudioDataset
 from .text_to_speech import WordAudioWithNegativeSamples

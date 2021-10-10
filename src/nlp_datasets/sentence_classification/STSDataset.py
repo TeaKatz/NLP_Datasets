@@ -39,7 +39,7 @@ def load_sts(max_samples=None, val_set=False, test_set=False):
                 # Terminate by max_samples
                 if (max_samples is not None) and (count > max_samples):
                     break
-                line = line.split()
+                line = line.split("\t")
                 similarity, sentence_1, sentence_2 = line[SIMILARITY_COL], line[SENTENCE_1_COL], line[SENTENCE_2_COL]
                 yield similarity, sentence_1, sentence_2
     

@@ -80,6 +80,7 @@ class SNLIDataset(BaseDataset):
 
     def _process_data(self, data):
         # Extract data
+        # label: (contradiction, neutral, entailment)
         label, sentence_1, sentence_2 = data
 
         # Transform data into sample

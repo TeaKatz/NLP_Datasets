@@ -9,16 +9,17 @@ class NLIDataset(BaseDataset):
     local_dir = "nli_dataset"
 
     def __init__(self,
-                 max_samples=None,
                  train_split_ratio=1.0,
                  val_split_ratio=None,
                  test_split_ratio=None,
-                 random_seed=0,
-                 local_dir=None):
+                 **kwargs):
 
         download_snli()
         download_mnli()
-        super().__init__(max_samples, train_split_ratio, val_split_ratio, test_split_ratio, random_seed, local_dir)
+        super().__init__(train_split_ratio=train_split_ratio, 
+                         val_split_ratio=val_split_ratio, 
+                         test_split_ratio=test_split_ratio, 
+                         **kwargs)
 
     def _load_train(self):
         snli_max_samples = math.ceil(self.max_samples / 2) if self.max_samples is not None else self.max_samples

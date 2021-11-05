@@ -124,18 +124,13 @@ class Word2SpeechDataset(BaseDataset):
                  include_word=True,
                  include_anagram=True,
                  include_misspelling=True,
-                 max_samples=None,
-                 train_split_ratio=0.8,
-                 val_split_ratio=0.1,
-                 test_split_ratio=0.1,
-                 random_seed=0, 
-                 local_dir=None):
+                 **kwargs):
 
         self.include_word = include_word
         self.include_anagram = include_anagram
         self.include_misspelling = include_misspelling
         download_corpus()
-        super().__init__(max_samples, train_split_ratio, val_split_ratio, test_split_ratio, random_seed, local_dir)
+        super().__init__(**kwargs)
 
     def _load_train(self):
         """ Yield data from training set """

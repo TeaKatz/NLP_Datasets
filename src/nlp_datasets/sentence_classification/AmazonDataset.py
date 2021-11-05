@@ -60,19 +60,14 @@ class AmazonDataset(BaseDataset):
     def __init__(self, 
                 ignore_title=False, 
                 ignore_body=False, 
-                max_samples=None, 
-                train_split_ratio=0.8,
-                val_split_ratio=0.1,
-                test_split_ratio=0.1,
-                random_seed=0, 
-                local_dir=None):
+                **kwargs):
         
         assert (ignore_title and ignore_body) == False
 
         self.ignore_title = ignore_title
         self.ignore_body = ignore_body
         download_amazon()
-        super().__init__(max_samples, train_split_ratio, val_split_ratio, test_split_ratio, random_seed, local_dir)
+        super().__init__(**kwargs)
 
     def _load_train(self):
         """ Yield data from training set """

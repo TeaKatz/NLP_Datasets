@@ -48,16 +48,10 @@ def load_wordsim353(max_samples: int=None):
 class WordSim353Dataset(BaseDataset):
     local_dir = "wordsim353_dataset"
 
-    def __init__(self, 
-                max_samples=None, 
-                train_split_ratio=0.8,
-                val_split_ratio=0.1,
-                test_split_ratio=0.1,
-                random_seed=0, 
-                local_dir=None):
+    def __init__(self, **kwargs):
 
         download_wordsim353()
-        super().__init__(max_samples, train_split_ratio, val_split_ratio, test_split_ratio, random_seed, local_dir)
+        super().__init__(**kwargs)
 
     def _load_train(self):
         """ Yield data from training set """

@@ -55,15 +55,16 @@ class STSDataset(BaseDataset):
     local_dir = "sts_dataset"
 
     def __init__(self,
-                 max_samples=None,
                  train_split_ratio=1.0,
                  val_split_ratio=None,
                  test_split_ratio=None,
-                 random_seed=0,
-                 local_dir=None):
+                 **kwargs):
 
         download_sts()
-        super().__init__(max_samples, train_split_ratio, val_split_ratio, test_split_ratio, random_seed, local_dir)
+        super().__init__(train_split_ratio=train_split_ratio, 
+                         val_split_ratio=val_split_ratio, 
+                         test_split_ratio=test_split_ratio, 
+                         **kwargs)
 
     def _load_train(self):
         return load_sts(max_samples=self.max_samples)

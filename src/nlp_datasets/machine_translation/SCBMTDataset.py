@@ -43,16 +43,9 @@ def load_scbmt(max_samples: int=None):
 class SCBMTDataset(BaseDataset):
     local_dir = "scbmt_dataset"
 
-    def __init__(self,
-                max_samples=None,
-                train_split_ratio=0.8,
-                val_split_ratio=0.1,
-                test_split_ratio=0.1,
-                random_seed=0,
-                local_dir=None):
-
+    def __init__(self, **kwargs):
         download_scbmt()
-        super().__init__(max_samples, train_split_ratio, val_split_ratio, test_split_ratio, random_seed, local_dir)
+        super().__init__(**kwargs)
 
     def _load_train(self):
         for en_sentence, th_sentence in load_scbmt(max_samples=self.max_samples):

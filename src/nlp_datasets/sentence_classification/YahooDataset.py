@@ -52,12 +52,10 @@ class YahooDataset(BaseDataset):
                 ignore_title=False, 
                 ignore_content=False, 
                 ignore_answer=False, 
-                max_samples=None,
                 train_split_ratio=0.9,
                 val_split_ratio=0.1,
                 test_split_ratio=None,
-                random_seed=0,
-                local_dir=None):
+                **kwargs):
     
         assert (ignore_title and ignore_content and ignore_answer) == False
 
@@ -65,7 +63,10 @@ class YahooDataset(BaseDataset):
         self.ignore_content = ignore_content
         self.ignore_answer = ignore_answer
         download_yahoo()
-        super().__init__(max_samples, train_split_ratio, val_split_ratio, test_split_ratio, random_seed, local_dir)
+        super().__init__(train_split_ratio=train_split_ratio, 
+                         val_split_ratio=val_split_ratio, 
+                         test_split_ratio=test_split_ratio, 
+                         **kwargs)
 
     def _load_train(self):
         for label, title_text, content_text, answer_text in load_yahoo(max_samples=self.max_samples, test_set=False):

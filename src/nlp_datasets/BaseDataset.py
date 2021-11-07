@@ -7,27 +7,6 @@ from abc import abstractmethod
 from torch.utils.data import Dataset
 
 
-# class DatasetGenerator(Dataset):
-#     def __init__(self, data_dirs):
-#         self.data_dirs = data_dirs
-#         self.preprocessor = None
-
-#     def __len__(self):
-#         return len(self.data_dirs)
-
-#     def __getitem__(self, idx):
-#         sample = joblib.load(self.data_dirs[idx])
-#         if self.preprocessor is not None:
-#             sample = self.preprocessor(sample)
-#         return sample
-
-#     def set_preprocessor(self, preprocessor):
-#         self.preprocessor = preprocessor
-
-#     def clear_preprocessor(self):
-#         self.preprocessor = None
-
-
 class DatasetGenerator(Dataset):
     def __init__(self, data_dirs, batch_size=1, shuffle=False, drop_last=False):
         self.data_dirs = data_dirs
@@ -36,10 +15,9 @@ class DatasetGenerator(Dataset):
         self.drop_last = drop_last
         self.preprocessor = None
 
-        if self.drop_last:
-            self.batch_num = math.floor(len(self.data_dirs) / self.batch_size)
-        else:
-            self.batch_num = math.ceil(len(self.data_dirs) / self.batch_size)
+        self.batch_num = math.floor(len(self.data_dirs) / self.batch_size)
+        if self.drop_last and len(self.data_dirs) % self.batch_size != 0:
+            self.batch_num = self.batch_num - 1
 
         self.sample_indices = np.arange(len(self.data_dirs))
         if self.shuffle: 

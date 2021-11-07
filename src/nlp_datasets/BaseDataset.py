@@ -34,50 +34,39 @@ class DatasetGenerator(Dataset):
         self.batch_size = batch_size
         self.shuffle = shuffle
         self.drop_last = drop_last
-
         self.preprocessor = None
+
         if self.drop_last:
             self.batch_num = math.floor(len(self.data_dirs) / self.batch_size)
         else:
             self.batch_num = math.ceil(len(self.data_dirs) / self.batch_size)
+
         self.sample_indices = np.arange(len(self.data_dirs))
-
-        self.batchs = None
-        self.counter = None
-        self.create_batchs()
-
-    def create_batchs(self):
-        self.counter = 0
-
-        if self.shuffle:
+        if self.shuffle: 
             np.random.shuffle(self.sample_indices)
-
-        self.batchs = []
-        for i in range(self.batch_num):
-            start_idx = i * self.batch_size
-            end_idx = (i + 1) * self.batch_size
-            self.batchs.append(self.sample_indices[start_idx:end_idx])
+        self.counter = 0
 
     def __len__(self):
         return self.batch_num
 
-    def __getitem__(self, batch_idx):
-        assert batch_idx < len(self.batch_num), f"Index exceed dataset size (size: {len(self.batch_num)}, but get index {batch_idx})"
+    def __getitem__(self, batch_index):
+        assert batch_index < self.batch_num, f"Index exceed dataset size (size: {self.batch_num}, but get index {batch_index})"
 
         self.counter += 1
         if self.counter >= self.batch_num:
-            self.create_batchs()
+            if self.shuffle: 
+                np.random.shuffle(self.sample_indices)
+            self.counter = 0
 
         samples = []
-        batch = self.batchs[batch_idx]
-        for idx in batch:
-            sample = joblib.load(self.data_dirs[idx])
-            if self.preprocessor is not None:
-                sample = self.preprocessor(sample)
+        start_index = batch_index * self.batch_size
+        end_index = (batch_index + 1) * self.batch_size
+        for sample_index in self.sample_indices[start_index:end_index]:
+            sample = joblib.load(self.data_dirs[sample_index])
             samples.append(sample)
-        
-        if len(samples) == 1:
-            samples = samples[0]
+
+        if self.preprocessor is not None:
+            samples = self.preprocessor(samples)
         return samples
 
     def set_preprocessor(self, preprocessor):

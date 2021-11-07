@@ -9,7 +9,7 @@ from ..path_config import BASE_DIR, MNLI_BASE_DIR, MNLI_TRAIN_DIR, MNLI_VAL_DIR,
 from ..url_config import MNLI_URL
 
 
-LABEL_COL = 1
+LABEL_COL = 0
 SENTENCE_1_COL = 5
 SENTENCE_2_COL = 6
 

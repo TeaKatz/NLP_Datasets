@@ -9,7 +9,7 @@ from ..path_config import BASE_DIR, SNLI_BASE_DIR, SNLI_TRAIN_DIR, SNLI_VAL_DIR,
 from ..url_config import SNLI_URL
 
 
-LABEL_COL = 1
+LABEL_COL = 0
 SENTENCE_1_COL = 5
 SENTENCE_2_COL = 6
 

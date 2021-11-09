@@ -8,16 +8,19 @@ from torch.utils.data import Dataset
 
 
 class DatasetGenerator(Dataset):
-    def __init__(self, data_dirs, batch_size=1, shuffle=False, drop_last=False):
+    def __init__(self, data_dirs, batch_size=None, shuffle=False, drop_last=False):
         self.data_dirs = data_dirs
         self.batch_size = batch_size
         self.shuffle = shuffle
         self.drop_last = drop_last
         self.preprocessor = None
 
-        self.batch_num = math.floor(len(self.data_dirs) / self.batch_size)
-        if self.drop_last and len(self.data_dirs) % self.batch_size != 0:
-            self.batch_num = self.batch_num - 1
+        if self.batch_size is None:
+            self.batch_num = len(self.data_dirs)
+        else:
+            self.batch_num = math.floor(len(self.data_dirs) / self.batch_size)
+            if self.drop_last and len(self.data_dirs) % self.batch_size != 0:
+                self.batch_num = self.batch_num - 1
 
         self.sample_indices = np.arange(len(self.data_dirs))
         if self.shuffle: 
@@ -28,7 +31,8 @@ class DatasetGenerator(Dataset):
         return self.batch_num
 
     def __getitem__(self, batch_index):
-        assert batch_index < self.batch_num, f"Index exceed dataset size (size: {self.batch_num}, but get index {batch_index})"
+        if batch_index >= len(self): 
+            raise IndexError
 
         self.counter += 1
         if self.counter >= self.batch_num:
@@ -36,12 +40,15 @@ class DatasetGenerator(Dataset):
                 np.random.shuffle(self.sample_indices)
             self.counter = 0
 
-        samples = []
-        start_index = batch_index * self.batch_size
-        end_index = (batch_index + 1) * self.batch_size
-        for sample_index in self.sample_indices[start_index:end_index]:
-            sample = joblib.load(self.data_dirs[sample_index])
-            samples.append(sample)
+        if self.batch_size is None:
+            samples = joblib.load(self.data_dirs[batch_index])
+        else:
+            samples = []
+            start_index = batch_index * self.batch_size
+            end_index = (batch_index + 1) * self.batch_size
+            for sample_index in self.sample_indices[start_index:end_index]:
+                sample = joblib.load(self.data_dirs[sample_index])
+                samples.append(sample)
 
         if self.preprocessor is not None:
             samples = self.preprocessor(samples)
@@ -62,7 +69,7 @@ class BaseDataset:
                 train_split_ratio=0.8,
                 val_split_ratio=0.1,
                 test_split_ratio=0.1,
-                batch_size=1, 
+                batch_size=None, 
                 shuffle=False, 
                 drop_last=False,
                 random_seed=0, 

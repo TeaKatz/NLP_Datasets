@@ -1,6 +1,6 @@
 from .AmazonDataset import AmazonDataset
 from .YahooDataset import YahooDataset
 from .STSDataset import STSDataset
-from .SNLIDataset import SNLIDataset
+from .SNLIDataset import SNLIDataset, RefinedSNLIDataset
 from .MNLIDataset import MNLIDataset, RefinedMNLIDataset
-from .NLIDataset import NLIDataset
+from .NLIDataset import NLIDataset, RefinedNLIDataset

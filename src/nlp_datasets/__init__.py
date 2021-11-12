@@ -4,7 +4,7 @@ from .sentence_classification import AmazonDataset
 from .sentence_classification import YahooDataset
 from .sentence_classification import STSDataset
 from .sentence_classification import SNLIDataset
-from .sentence_classification import MNLIDataset
+from .sentence_classification import MNLIDataset, RefinedMNLIDataset
 from .sentence_classification import NLIDataset
 
 from .text_to_speech import WordAudioDataset

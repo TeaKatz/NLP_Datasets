@@ -29,7 +29,7 @@ def download_snli():
     os.remove(SNLI_BASE_DIR + ".zip")
 
 
-def load_snli(max_samples=None, val_set=False, test_set=False):
+def load_snli(max_samples=None, val_set=False, test_set=False, valid_labels=("contradiction", "neutral", "entailment")):
     def _load_snli(corpus_dir):
         count = 0
         with open(corpus_dir, "r") as f:
@@ -45,7 +45,9 @@ def load_snli(max_samples=None, val_set=False, test_set=False):
                     break
                 line = line.split("\t")
                 label, sentence_1, sentence_2 = line[LABEL_COL], line[SENTENCE_1_COL], line[SENTENCE_2_COL]
-                yield label, sentence_1, sentence_2
+
+                if label in valid_labels:
+                    yield label, sentence_1, sentence_2
 
     if val_set:
         return _load_snli(SNLI_VAL_DIR)
@@ -59,11 +61,13 @@ class SNLIDataset(BaseDataset):
     local_dir = "snli_dataset"
 
     def __init__(self,
+                 valid_labels=("contradiction", "neutral", "entailment"),
                  train_split_ratio=1.0,
                  val_split_ratio=None,
                  test_split_ratio=None,
                  **kwargs):
 
+        self.valid_labels = valid_labels
         download_snli()
         super().__init__(train_split_ratio=train_split_ratio, 
                          val_split_ratio=val_split_ratio, 
@@ -71,13 +75,13 @@ class SNLIDataset(BaseDataset):
                          **kwargs)
 
     def _load_train(self):
-        return load_snli(max_samples=self.max_samples)
+        return load_snli(max_samples=self.max_samples, valid_labels=self.valid_labels)
 
     def _load_val(self):
-        return load_snli(max_samples=self.max_samples, val_set=True)
+        return load_snli(max_samples=self.max_samples, val_set=True, valid_labels=self.valid_labels)
 
     def _load_test(self):
-        return load_snli(max_samples=self.max_samples, test_set=True)
+        return load_snli(max_samples=self.max_samples, test_set=True, valid_labels=self.valid_labels)
 
     def _process_data(self, data):
         # Extract data

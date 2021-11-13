@@ -126,10 +126,11 @@ def create_refined_snli():
 
         data = {"premise": [], "entailment": [], "contradiction": []}
         for premise in tqdm(metadata):
-            if len(metadata[premise]["entailment"]) < 1 or len(metadata[premise]["contradiction"]) < 1:
+            if len(metadata[premise]["entailment"]) < 1 or len(metadata[premise]["neutral"]) < 1 or len(metadata[premise]["contradiction"]) < 1:
                 continue
             data["premise"].append(premise)
             data["entailment"].append(random.choice(metadata[premise]["entailment"]))
+            data["neutral"].append(random.choice(metadata[premise]["neutral"]))
             data["contradiction"].append(random.choice(metadata[premise]["contradiction"]))
         dataframe = pd.DataFrame(data)
         dataframe.to_csv(destination_dir, index=False)
@@ -146,12 +147,12 @@ def load_refined_snli(max_samples=None, val_set=False, test_set=False):
     def _load_refined_snli(corpus_dir):
         count = 0
         dataframe = pd.read_csv(corpus_dir)
-        for premise, entailment, contradiction in dataframe.values.tolist():
+        for premise, entailment, neutral, contradiction in dataframe.values.tolist():
             count += 1
             # Terminate by max_samples
             if (max_samples is not None) and (count > max_samples):
                 break
-            yield str(premise), str(entailment), str(contradiction)
+            yield str(premise), str(entailment), str(neutral), str(contradiction)
 
     if val_set:
         return _load_refined_snli(SNLI_REFINED_VAL_DIR)
@@ -188,8 +189,8 @@ class RefinedSNLIDataset(BaseDataset):
 
     def _process_data(self, data):
         # Extract data
-        premise, entailment, contradiction = data
+        premise, entailment, neutral, contradiction = data
 
         # Transform data into sample
-        sample = {"premise": premise, "entailment": entailment, "contradiction": contradiction}
+        sample = {"premise": premise, "entailment": entailment, "neutral": neutral, "contradiction": contradiction}
         return sample

@@ -105,8 +105,8 @@ class RefinedNLIDataset(BaseDataset):
 
     def _process_data(self, data):
         # Extract data
-        premise, entailment, contradiction = data
+        premise, entailment, neutral, contradiction = data
 
         # Transform data into sample
-        sample = {"premise": premise, "entailment": entailment, "contradiction": contradiction}
+        sample = {"premise": premise, "entailment": entailment, "neutral": neutral, "contradiction": contradiction}
         return sample

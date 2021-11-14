@@ -130,7 +130,7 @@ def create_refined_mnli():
                     }
                 metadata[premise][label].append(hypothesis)
 
-        data = {"premise": [], "entailment": [], "contradiction": []}
+        data = {"premise": [], "entailment": [], "neutral": [], "contradiction": []}
         for premise in tqdm(metadata):
             if len(metadata[premise]["entailment"]) < 1 or len(metadata[premise]["neutral"]) < 1 or len(metadata[premise]["contradiction"]) < 1:
                 continue

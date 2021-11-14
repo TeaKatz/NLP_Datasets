@@ -78,30 +78,30 @@ class RefinedNLIDataset(BaseDataset):
 
     def _load_train(self):
         snli_max_samples = math.ceil(self.max_samples / 2) if self.max_samples is not None else self.max_samples
-        for label, sentence_1, sentence_2 in load_refined_snli(max_samples=snli_max_samples):
-            yield label, sentence_1, sentence_2
+        for premise, entailment, neutral, contradiction in load_refined_snli(max_samples=snli_max_samples):
+            yield premise, entailment, neutral, contradiction
 
         mnli_max_samples = math.floor(self.max_samples / 2) if self.max_samples is not None else self.max_samples
-        for label, sentence_1, sentence_2 in load_refined_mnli(max_samples=mnli_max_samples):
-            yield label, sentence_1, sentence_2
+        for premise, entailment, neutral, contradiction in load_refined_mnli(max_samples=mnli_max_samples):
+            yield premise, entailment, neutral, contradiction
 
     def _load_val(self):
         snli_max_samples = math.ceil(self.max_samples / 2) if self.max_samples is not None else self.max_samples
-        for label, sentence_1, sentence_2 in load_refined_snli(max_samples=snli_max_samples, val_set=True):
-            yield label, sentence_1, sentence_2
+        for premise, entailment, neutral, contradiction in load_refined_snli(max_samples=snli_max_samples, val_set=True):
+            yield premise, entailment, neutral, contradiction
         
         mnli_max_samples = math.floor(self.max_samples / 2) if self.max_samples is not None else self.max_samples
-        for label, sentence_1, sentence_2 in load_refined_mnli(max_samples=mnli_max_samples, val_set=True):
-            yield label, sentence_1, sentence_2
+        for premise, entailment, neutral, contradiction in load_refined_mnli(max_samples=mnli_max_samples, val_set=True):
+            yield premise, entailment, neutral, contradiction
 
     def _load_test(self):
         snli_max_samples = math.ceil(self.max_samples / 2) if self.max_samples is not None else self.max_samples
-        for label, sentence_1, sentence_2 in load_refined_snli(max_samples=snli_max_samples, test_set=True):
-            yield label, sentence_1, sentence_2
+        for premise, entailment, neutral, contradiction in load_refined_snli(max_samples=snli_max_samples, test_set=True):
+            yield premise, entailment, neutral, contradiction
 
         mnli_max_samples = math.floor(self.max_samples / 2) if self.max_samples is not None else self.max_samples
-        for label, sentence_1, sentence_2 in load_refined_mnli(max_samples=mnli_max_samples, test_set=True):
-            yield label, sentence_1, sentence_2
+        for premise, entailment, neutral, contradiction in load_refined_mnli(max_samples=mnli_max_samples, test_set=True):
+            yield premise, entailment, neutral, contradiction
 
     def _process_data(self, data):
         # Extract data

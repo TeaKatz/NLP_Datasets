@@ -87,3 +87,5 @@ STS_URL = "http://ixa2.si.ehu.es/stswiki/images/4/48/Stsbenchmark.tar.gz"
 SNLI_URL = "https://nlp.stanford.edu/projects/snli/snli_1.0.zip"
 # MultiNLI
 MNLI_URL = "https://cims.nyu.edu/~sbowman/multinli/multinli_1.0.zip"
+# SimcseNLI
+SIMCSE_NLI_URL = "https://huggingface.co/datasets/princeton-nlp/datasets-for-simcse/resolve/main/nli_for_simcse.csv"

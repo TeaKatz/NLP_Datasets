@@ -108,3 +108,6 @@ MNLI_TEST_DIR = MNLI_BASE_DIR + "/multinli_1.0_dev_mismatched.txt"
 MNLI_REFINED_TRAIN_DIR = MNLI_BASE_DIR + "/multinli_refined_train.csv"
 MNLI_REFINED_VAL_DIR = MNLI_BASE_DIR + "/multinli_refined_dev.csv"
 MNLI_REFINED_TEST_DIR = MNLI_BASE_DIR + "/multinli_refined_test.csv"
+# SimcseNLI
+SIMCSE_NLI_BASE_DIR = BASE_DIR + "/simcse_nli"
+SIMCSE_NLI_TRAIN_DIR = SIMCSE_NLI_BASE_DIR + "/simcse_nli.csv"

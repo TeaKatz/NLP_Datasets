@@ -5,30 +5,29 @@ import urllib.request
 from progressist import ProgressBar
 
 from ..BaseDataset import BaseDataset
-from ..path_config import SEMANTIC_SIMILARITY_WORDSIM353_DIR, SEMANTIC_SIMILARITY_BASE_DIR, BASE_DIR
-from ..url_config import WORDSIM353_URL
+from ..config import BASE_DIR, SEMANTIC_SIMILARITY
 
 
 def download_wordsim353():
-    if not os.path.exists(SEMANTIC_SIMILARITY_BASE_DIR):
-        os.makedirs(SEMANTIC_SIMILARITY_BASE_DIR)
+    if not os.path.exists(SEMANTIC_SIMILARITY.PATH):
+        os.makedirs(SEMANTIC_SIMILARITY.PATH)
 
-    if os.path.exists(SEMANTIC_SIMILARITY_WORDSIM353_DIR):
+    if os.path.exists(SEMANTIC_SIMILARITY.WORDSIM353_DIR):
         return
     # Download WordSim353
-    print(f"Downloading: {WORDSIM353_URL}")
+    print(f"Downloading: {SEMANTIC_SIMILARITY.WORDSIM353_URL}")
     bar = ProgressBar(template="|{animation}| {done:B}/{total:B}")
-    local_dir, _ = urllib.request.urlretrieve(WORDSIM353_URL, BASE_DIR + "/wordsim353.zip", reporthook=bar.on_urlretrieve)
+    local_dir, _ = urllib.request.urlretrieve(SEMANTIC_SIMILARITY.WORDSIM353_URL, BASE_DIR + "/wordsim353.zip", reporthook=bar.on_urlretrieve)
     # Unzip file
     with zipfile.ZipFile(local_dir, 'r') as zip_ref:
-        zip_ref.extractall(SEMANTIC_SIMILARITY_BASE_DIR + "/wordsim353")
+        zip_ref.extractall(SEMANTIC_SIMILARITY.PATH + "/wordsim353")
     # Remove zip file
     os.remove(BASE_DIR + "/wordsim353.zip")
 
 
 def load_wordsim353(max_samples: int=None):
     count = 0
-    with open(SEMANTIC_SIMILARITY_WORDSIM353_DIR, "r") as f:
+    with open(SEMANTIC_SIMILARITY.WORDSIM353_DIR, "r") as f:
         for i, line in enumerate(f.readlines()):
             count += 1
             # Terminate by max_samples

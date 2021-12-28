@@ -5,81 +5,66 @@ from scipy.io.wavfile import read
 
 from ..BaseDataset import BaseDataset
 from ..utilities import download_file_from_google_drive
-from ..path_config import WORD_TO_SPEECH_BASE_DIR
-from ..path_config import WORD_TO_SPEECH_ANAGRAMS_BASE_DIR
-from ..path_config import WORD_TO_SPEECH_MISSPELLINGS_BASE_DIR
-from ..path_config import WORD_TO_SPEECH_WORDS_BASE_DIR
-from ..url_config import WORD_TO_SPEECH_ANAGRAMS_DATA_ID
-from ..url_config import WORD_TO_SPEECH_ANAGRAMS_DATA_URL
-from ..url_config import WORD_TO_SPEECH_ANAGRAMS_INDEX_ID
-from ..url_config import WORD_TO_SPEECH_ANAGRAMS_INDEX_URL
-from ..url_config import WORD_TO_SPEECH_MISSPELLINGS_DATA_ID
-from ..url_config import WORD_TO_SPEECH_MISSPELLINGS_DATA_URL
-from ..url_config import WORD_TO_SPEECH_MISSPELLINGS_INDEX_ID
-from ..url_config import WORD_TO_SPEECH_MISSPELLINGS_INDEX_URL
-from ..url_config import WORD_TO_SPEECH_WORDS_DATA_ID
-from ..url_config import WORD_TO_SPEECH_WORDS_DATA_URL
-from ..url_config import WORD_TO_SPEECH_WORDS_INDEX_ID
-from ..url_config import WORD_TO_SPEECH_WORDS_INDEX_URL
+from ..config import WORD_TO_SPEECH
 
 
 def download_corpus():
-    if not os.path.exists(WORD_TO_SPEECH_BASE_DIR):
-        os.makedirs(WORD_TO_SPEECH_BASE_DIR)
+    if not os.path.exists(WORD_TO_SPEECH.PATH):
+        os.makedirs(WORD_TO_SPEECH.PATH)
 
     # Anagrams
-    if not os.path.exists(WORD_TO_SPEECH_ANAGRAMS_BASE_DIR):
-        os.makedirs(WORD_TO_SPEECH_ANAGRAMS_BASE_DIR)
+    if not os.path.exists(WORD_TO_SPEECH.ANAGRAMS_BASE_DIR):
+        os.makedirs(WORD_TO_SPEECH.ANAGRAMS_BASE_DIR)
 
-    if not os.path.exists(WORD_TO_SPEECH_ANAGRAMS_BASE_DIR + "/indexing.txt"):
+    if not os.path.exists(WORD_TO_SPEECH.ANAGRAMS_BASE_DIR + "/indexing.txt"):
         # Download indexing
-        print(f"Downloading: {WORD_TO_SPEECH_ANAGRAMS_INDEX_URL}")
-        download_file_from_google_drive(WORD_TO_SPEECH_ANAGRAMS_INDEX_ID, WORD_TO_SPEECH_ANAGRAMS_BASE_DIR + "/indexing.txt")
-    if not os.path.exists(WORD_TO_SPEECH_ANAGRAMS_BASE_DIR + "/audios"):
+        print(f"Downloading: {WORD_TO_SPEECH.ANAGRAMS_INDEX_URL}")
+        download_file_from_google_drive(WORD_TO_SPEECH.ANAGRAMS_INDEX_ID, WORD_TO_SPEECH.ANAGRAMS_BASE_DIR + "/indexing.txt")
+    if not os.path.exists(WORD_TO_SPEECH.ANAGRAMS_BASE_DIR + "/audios"):
         # Download data
-        print(f"Downloading: {WORD_TO_SPEECH_ANAGRAMS_DATA_URL}")
-        download_file_from_google_drive(WORD_TO_SPEECH_ANAGRAMS_DATA_ID, WORD_TO_SPEECH_ANAGRAMS_BASE_DIR + "/data.zip")
+        print(f"Downloading: {WORD_TO_SPEECH.ANAGRAMS_DATA_URL}")
+        download_file_from_google_drive(WORD_TO_SPEECH.ANAGRAMS_DATA_ID, WORD_TO_SPEECH.ANAGRAMS_BASE_DIR + "/data.zip")
         # Unzip file
-        with zipfile.ZipFile(WORD_TO_SPEECH_ANAGRAMS_BASE_DIR + "/data.zip", "r") as zip_ref:
-            zip_ref.extractall(WORD_TO_SPEECH_ANAGRAMS_BASE_DIR)
+        with zipfile.ZipFile(WORD_TO_SPEECH.ANAGRAMS_BASE_DIR + "/data.zip", "r") as zip_ref:
+            zip_ref.extractall(WORD_TO_SPEECH.ANAGRAMS_BASE_DIR)
         # Remove zip file
-        os.remove(WORD_TO_SPEECH_ANAGRAMS_BASE_DIR + "/data.zip")
+        os.remove(WORD_TO_SPEECH.ANAGRAMS_BASE_DIR + "/data.zip")
 
     # Misspellings
-    if not os.path.exists(WORD_TO_SPEECH_MISSPELLINGS_BASE_DIR):
-        os.makedirs(WORD_TO_SPEECH_MISSPELLINGS_BASE_DIR)
+    if not os.path.exists(WORD_TO_SPEECH.MISSPELLINGS_BASE_DIR):
+        os.makedirs(WORD_TO_SPEECH.MISSPELLINGS_BASE_DIR)
 
-    if not os.path.exists(WORD_TO_SPEECH_MISSPELLINGS_BASE_DIR + "/indexing.txt"):
+    if not os.path.exists(WORD_TO_SPEECH.MISSPELLINGS_BASE_DIR + "/indexing.txt"):
         # Download indexing
-        print(f"Downloading: {WORD_TO_SPEECH_MISSPELLINGS_INDEX_URL}")
-        download_file_from_google_drive(WORD_TO_SPEECH_MISSPELLINGS_INDEX_ID, WORD_TO_SPEECH_MISSPELLINGS_BASE_DIR + "/indexing.txt")
-    if not os.path.exists(WORD_TO_SPEECH_MISSPELLINGS_BASE_DIR + "/audios"):
+        print(f"Downloading: {WORD_TO_SPEECH.MISSPELLINGS_INDEX_URL}")
+        download_file_from_google_drive(WORD_TO_SPEECH.MISSPELLINGS_INDEX_ID, WORD_TO_SPEECH.MISSPELLINGS_BASE_DIR + "/indexing.txt")
+    if not os.path.exists(WORD_TO_SPEECH.MISSPELLINGS_BASE_DIR + "/audios"):
         # Download data
-        print(f"Downloading: {WORD_TO_SPEECH_MISSPELLINGS_DATA_URL}")
-        download_file_from_google_drive(WORD_TO_SPEECH_MISSPELLINGS_DATA_ID, WORD_TO_SPEECH_MISSPELLINGS_BASE_DIR + "/data.zip")
+        print(f"Downloading: {WORD_TO_SPEECH.MISSPELLINGS_DATA_URL}")
+        download_file_from_google_drive(WORD_TO_SPEECH.MISSPELLINGS_DATA_ID, WORD_TO_SPEECH.MISSPELLINGS_BASE_DIR + "/data.zip")
         # Unzip file
-        with zipfile.ZipFile(WORD_TO_SPEECH_MISSPELLINGS_BASE_DIR + "/data.zip", "r") as zip_ref:
-            zip_ref.extractall(WORD_TO_SPEECH_MISSPELLINGS_BASE_DIR)
+        with zipfile.ZipFile(WORD_TO_SPEECH.MISSPELLINGS_BASE_DIR + "/data.zip", "r") as zip_ref:
+            zip_ref.extractall(WORD_TO_SPEECH.MISSPELLINGS_BASE_DIR)
         # Remove zip file
-        os.remove(WORD_TO_SPEECH_MISSPELLINGS_BASE_DIR + "/data.zip")
+        os.remove(WORD_TO_SPEECH.MISSPELLINGS_BASE_DIR + "/data.zip")
 
     # Words
-    if not os.path.exists(WORD_TO_SPEECH_WORDS_BASE_DIR):
-        os.makedirs(WORD_TO_SPEECH_WORDS_BASE_DIR)
+    if not os.path.exists(WORD_TO_SPEECH.WORDS_BASE_DIR):
+        os.makedirs(WORD_TO_SPEECH.WORDS_BASE_DIR)
 
-    if not os.path.exists(WORD_TO_SPEECH_WORDS_BASE_DIR + "/indexing.txt"):
+    if not os.path.exists(WORD_TO_SPEECH.WORDS_BASE_DIR + "/indexing.txt"):
         # Download indexing
-        print(f"Downloading: {WORD_TO_SPEECH_WORDS_INDEX_URL}")
-        download_file_from_google_drive(WORD_TO_SPEECH_WORDS_INDEX_ID, WORD_TO_SPEECH_WORDS_BASE_DIR + "/indexing.txt")
-    if not os.path.exists(WORD_TO_SPEECH_WORDS_BASE_DIR + "/audios"):
+        print(f"Downloading: {WORD_TO_SPEECH.WORDS_INDEX_URL}")
+        download_file_from_google_drive(WORD_TO_SPEECH.WORDS_INDEX_ID, WORD_TO_SPEECH.WORDS_BASE_DIR + "/indexing.txt")
+    if not os.path.exists(WORD_TO_SPEECH.WORDS_BASE_DIR + "/audios"):
         # Download data
-        print(f"Downloading: {WORD_TO_SPEECH_WORDS_DATA_URL}")
-        download_file_from_google_drive(WORD_TO_SPEECH_WORDS_DATA_ID, WORD_TO_SPEECH_WORDS_BASE_DIR + "/data.zip")
+        print(f"Downloading: {WORD_TO_SPEECH.WORDS_DATA_URL}")
+        download_file_from_google_drive(WORD_TO_SPEECH.WORDS_DATA_ID, WORD_TO_SPEECH.WORDS_BASE_DIR + "/data.zip")
         # Unzip file
-        with zipfile.ZipFile(WORD_TO_SPEECH_WORDS_BASE_DIR + "/data.zip", "r") as zip_ref:
-            zip_ref.extractall(WORD_TO_SPEECH_WORDS_BASE_DIR)
+        with zipfile.ZipFile(WORD_TO_SPEECH.WORDS_BASE_DIR + "/data.zip", "r") as zip_ref:
+            zip_ref.extractall(WORD_TO_SPEECH.WORDS_BASE_DIR)
         # Remove zip file
-        os.remove(WORD_TO_SPEECH_WORDS_BASE_DIR + "/data.zip")
+        os.remove(WORD_TO_SPEECH.WORDS_BASE_DIR + "/data.zip")
 
 
 def load_corpus(max_samples: int=None, include_word: bool=True, include_anagram: bool=True, include_misspelling: bool=True):
@@ -95,21 +80,21 @@ def load_corpus(max_samples: int=None, include_word: bool=True, include_anagram:
 
     count = 0
     if include_word:
-        for word, audio in _load_corpus(WORD_TO_SPEECH_WORDS_BASE_DIR):
+        for word, audio in _load_corpus(WORD_TO_SPEECH.WORDS_BASE_DIR):
             count += 1
             # Terminate by max_samples
             if (max_samples is not None) and (count > max_samples):
                 break
             yield word, audio
     if include_anagram:
-        for word, audio in _load_corpus(WORD_TO_SPEECH_ANAGRAMS_BASE_DIR):
+        for word, audio in _load_corpus(WORD_TO_SPEECH.ANAGRAMS_BASE_DIR):
             count += 1
             # Terminate by max_samples
             if (max_samples is not None) and (count > max_samples):
                 break
             yield word, audio
     if include_misspelling:
-        for word, audio in _load_corpus(WORD_TO_SPEECH_MISSPELLINGS_BASE_DIR):
+        for word, audio in _load_corpus(WORD_TO_SPEECH.MISSPELLINGS_BASE_DIR):
             count += 1
             # Terminate by max_samples
             if (max_samples is not None) and (count > max_samples):

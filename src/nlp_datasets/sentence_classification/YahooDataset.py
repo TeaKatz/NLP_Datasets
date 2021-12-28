@@ -7,20 +7,19 @@ import pandas as pd
 from progressist import ProgressBar
 
 from ..BaseDataset import BaseDataset
-from ..path_config import YAHOO_TRAIN_DIR, YAHOO_TEST_DIR, YAHOO_BASE_DIR, BASE_DIR
-from ..url_config import YAHOO_URL
+from ..config import BASE_DIR, YAHOO
 
 
 def download_yahoo():
     if not os.path.exists(BASE_DIR):
         os.makedirs(BASE_DIR)
 
-    if os.path.exists(YAHOO_BASE_DIR):
+    if os.path.exists(YAHOO.PATH):
         return
     # Download Yahoo Answer 
-    print(f"Downloading: {YAHOO_URL}")
+    print(f"Downloading: {YAHOO.URL}")
     bar = ProgressBar(template="|{animation}| {done:B}/{total:B}")
-    local_dir, _ = urllib.request.urlretrieve(YAHOO_URL, BASE_DIR + "/yahoo_answers_csv.zip", reporthook=bar.on_urlretrieve)
+    local_dir, _ = urllib.request.urlretrieve(YAHOO.URL, BASE_DIR + "/yahoo_answers_csv.zip", reporthook=bar.on_urlretrieve)
     # Unzip file
     with zipfile.ZipFile(local_dir, 'r') as zip_ref:
         zip_ref.extractall(BASE_DIR)
@@ -40,9 +39,9 @@ def load_yahoo(max_samples=None, test_set=False):
             yield label, title_text, content_text, answer_text
 
     if test_set:
-        return _load_yahoo(YAHOO_TEST_DIR)
+        return _load_yahoo(YAHOO.TEST_DIR)
     else:
-        return _load_yahoo(YAHOO_TRAIN_DIR)
+        return _load_yahoo(YAHOO.TRAIN_DIR)
 
 
 class YahooDataset(BaseDataset):

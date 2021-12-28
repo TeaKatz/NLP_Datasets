@@ -20,4 +20,14 @@ from .word_embedding import LocalWordDistributionDataset
 from .word_embedding import GlobalWordDistributionDataset
 from .word_embedding import WordDataset
 
+from .glue_benchmark import CoLADataset
+from .glue_benchmark import MNLIDataset
+from .glue_benchmark import MRPCDataset
+from .glue_benchmark import QNLIDataset
+from .glue_benchmark import QQPDataset
+from .glue_benchmark import RTEDataset
+from .glue_benchmark import SST2Dataset
+from .glue_benchmark import STSBDataset
+from .glue_benchmark import WNLIDataset
+
 from .BaseDataset import BaseDataset

@@ -4,47 +4,46 @@ import joblib
 import zipfile
 
 from ..BaseDataset import BaseDataset
-from ..path_config import WORD_AUDIO_INDEX_DIR, WORD_AUDIO_DATA_DIR, WORD_AUDIO_BASE_DIR
-from ..url_config import WORD_AUDIO_DATA_ID, WORD_AUDIO_DATA_URL, WORD_AUDIO_INDEX_ID, WORD_AUDIO_INDEX_URL
 from ..utilities import download_file_from_google_drive
+from ..config import WORD_AUDIO
 
 
 def download_word_audio():
-    if not os.path.exists(WORD_AUDIO_BASE_DIR):
-        os.makedirs(WORD_AUDIO_BASE_DIR)
+    if not os.path.exists(WORD_AUDIO.PATH):
+        os.makedirs(WORD_AUDIO.PATH)
 
-    if not os.path.exists(WORD_AUDIO_INDEX_DIR):
+    if not os.path.exists(WORD_AUDIO.INDEX_DIR):
         # Download index
-        print(f"Downloading: {WORD_AUDIO_INDEX_URL}")
-        download_file_from_google_drive(WORD_AUDIO_INDEX_ID, WORD_AUDIO_INDEX_DIR)
+        print(f"Downloading: {WORD_AUDIO.INDEX_URL}")
+        download_file_from_google_drive(WORD_AUDIO.INDEX_ID, WORD_AUDIO.INDEX_DIR)
 
-    if not os.path.exists(WORD_AUDIO_DATA_DIR):
+    if not os.path.exists(WORD_AUDIO.DATA_DIR):
         # Download data
-        print(f"Downloading: {WORD_AUDIO_DATA_URL}")
-        download_file_from_google_drive(WORD_AUDIO_DATA_ID, WORD_AUDIO_DATA_DIR + ".zip")
+        print(f"Downloading: {WORD_AUDIO.DATA_URL}")
+        download_file_from_google_drive(WORD_AUDIO.DATA_ID, WORD_AUDIO.DATA_DIR + ".zip")
         # Unzip file
-        with zipfile.ZipFile(WORD_AUDIO_DATA_DIR + ".zip", 'r') as zip_ref:
-            zip_ref.extractall(WORD_AUDIO_BASE_DIR)
+        with zipfile.ZipFile(WORD_AUDIO.DATA_DIR + ".zip", 'r') as zip_ref:
+            zip_ref.extractall(WORD_AUDIO.PATH)
         # Remove zip file
-        os.remove(WORD_AUDIO_DATA_DIR + ".zip")
+        os.remove(WORD_AUDIO.DATA_DIR + ".zip")
 
 
 def load_word_audio(max_samples: int=None):
     # Get indexing
-    with open(WORD_AUDIO_INDEX_DIR, "r") as f:
+    with open(WORD_AUDIO.INDEX_DIR, "r") as f:
         indexing = {line.split(":")[0]: line.split(":")[-1] for line in f.read().split("\n") if line != ""}
     
     for i, (word, filename) in enumerate(indexing.items()):
         if max_samples is not None and i >= max_samples:
             break
         
-        audio = joblib.load(WORD_AUDIO_DATA_DIR + "/" + filename)
+        audio = joblib.load(WORD_AUDIO.DATA_DIR + "/" + filename)
         yield word, audio
 
 
 def load_word_audio_with_negative_samples(max_samples: int=None, negative_size: int=5):
     # Get indexing
-    with open(WORD_AUDIO_INDEX_DIR, "r") as f:
+    with open(WORD_AUDIO.INDEX_DIR, "r") as f:
         indexing = {line.split(":")[0]: line.split(":")[-1] for line in f.read().split("\n") if line != ""}
 
     total_words = list(indexing)
@@ -54,12 +53,12 @@ def load_word_audio_with_negative_samples(max_samples: int=None, negative_size: 
             break
 
         # Get positive sample
-        pos_audio = joblib.load(WORD_AUDIO_DATA_DIR + "/" + filename)
+        pos_audio = joblib.load(WORD_AUDIO.DATA_DIR + "/" + filename)
         # Get negative samples
         neg_words = [word for word in total_words if word != pos_word]
         random.shuffle(neg_words)
         neg_words = neg_words[:negative_size]
-        neg_audios = [joblib.load(WORD_AUDIO_DATA_DIR + "/" + indexing[word]) for word in neg_words]
+        neg_audios = [joblib.load(WORD_AUDIO.DATA_DIR + "/" + indexing[word]) for word in neg_words]
         yield pos_word, pos_audio, neg_words, neg_audios
 
 

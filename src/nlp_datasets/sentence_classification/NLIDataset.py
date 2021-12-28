@@ -9,8 +9,7 @@ from progressist import ProgressBar
 from .SNLIDataset import download_snli, load_snli, load_refined_snli, create_refined_snli
 from .MNLIDataset import download_mnli, load_mnli, load_refined_mnli, create_refined_mnli
 from ..BaseDataset import BaseDataset
-from ..path_config import SIMCSE_NLI_BASE_DIR, SIMCSE_NLI_TRAIN_DIR
-from ..url_config import SIMCSE_NLI_URL
+from ..config import SIMCSE_NLI
 
 
 class NLIDataset(BaseDataset):
@@ -121,20 +120,20 @@ class RefinedNLIDataset(BaseDataset):
 
 
 def download_simcse_nli():
-    if os.path.exists(SIMCSE_NLI_BASE_DIR):
+    if os.path.exists(SIMCSE_NLI.PATH):
         return
     # Download MNLI
-    print(f"Downloading: {SIMCSE_NLI_URL}")
+    print(f"Downloading: {SIMCSE_NLI.URL}")
     bar = ProgressBar(template="|{animation}| {done:B}/{total:B}")
-    _ = urllib.request.urlretrieve(SIMCSE_NLI_URL, SIMCSE_NLI_BASE_DIR + ".csv", reporthook=bar.on_urlretrieve)
+    _ = urllib.request.urlretrieve(SIMCSE_NLI.URL, SIMCSE_NLI.PATH + ".csv", reporthook=bar.on_urlretrieve)
     # Move data to folder
-    os.makedirs(SIMCSE_NLI_BASE_DIR)
-    shutil.move(SIMCSE_NLI_BASE_DIR + ".csv", SIMCSE_NLI_TRAIN_DIR)
+    os.makedirs(SIMCSE_NLI.PATH)
+    shutil.move(SIMCSE_NLI.PATH + ".csv", SIMCSE_NLI.TRAIN_DIR)
 
 
 def load_simcse_nli(max_samples=None):
     count = 0
-    dataframe = pd.read_csv(SIMCSE_NLI_TRAIN_DIR)
+    dataframe = pd.read_csv(SIMCSE_NLI.TRAIN_DIR)
     for premise, entailment, contradiction in dataframe.values.tolist():
         count += 1
         # Terminate by max_samples

@@ -6,33 +6,32 @@ import numpy as np
 
 from ..BaseDataset import BaseDataset
 from ..utilities import download_file_from_google_drive
-from ..path_config import WORD_DISTRIBUTION_META_DIR, WORD_DISTRIBUTION_BASE_DIR
-from ..url_config import WORD_DISTRIBUTION_ID, WORD_DISTRIBUTION_URL
+from ..config import WORD_DISTRIBUTION
 
 
 def download_word_distribution():
-    if not os.path.exists(WORD_DISTRIBUTION_BASE_DIR):
-        os.makedirs(WORD_DISTRIBUTION_BASE_DIR)
+    if not os.path.exists(WORD_DISTRIBUTION.PATH):
+        os.makedirs(WORD_DISTRIBUTION.PATH)
 
-    if os.path.exists(WORD_DISTRIBUTION_META_DIR):
+    if os.path.exists(WORD_DISTRIBUTION.META_DIR):
         return
 
-    if not os.path.exists(WORD_DISTRIBUTION_META_DIR):
+    if not os.path.exists(WORD_DISTRIBUTION.META_DIR):
         # Download anagram_corpus.txt
-        print(f"Downloading: {WORD_DISTRIBUTION_URL}")
-        download_file_from_google_drive(WORD_DISTRIBUTION_ID, WORD_DISTRIBUTION_META_DIR)
+        print(f"Downloading: {WORD_DISTRIBUTION.URL}")
+        download_file_from_google_drive(WORD_DISTRIBUTION.ID, WORD_DISTRIBUTION.META_DIR)
 
 
 def process_meta_word_distribution(context_size: int=4):
     # Get words indexing
-    word_indexing_dir = WORD_DISTRIBUTION_BASE_DIR + f"/word_indexing.pkl"
+    word_indexing_dir = WORD_DISTRIBUTION.PATH + f"/word_indexing.pkl"
     if os.path.exists(word_indexing_dir):
         # Laod words indexing
         word_indexing = joblib.load(word_indexing_dir)
     else:
         print("Creating word indexing...")
         # Read Meta data
-        with open(WORD_DISTRIBUTION_META_DIR, "r") as f:
+        with open(WORD_DISTRIBUTION.META_DIR, "r") as f:
             meta_word_distribution = json.load(f)
         # Create word indexing
         word_indexing = {word: idx for idx, word in enumerate(meta_word_distribution)}
@@ -40,7 +39,7 @@ def process_meta_word_distribution(context_size: int=4):
         joblib.dump(word_indexing, word_indexing_dir)
 
     # Get word distribution
-    word_distribution_dir = WORD_DISTRIBUTION_BASE_DIR + f"/word_distribution_context_size_{context_size}.pkl"
+    word_distribution_dir = WORD_DISTRIBUTION.PATH + f"/word_distribution_context_size_{context_size}.pkl"
     if os.path.exists(word_distribution_dir):
         # Load word distribution
         word_distribution = joblib.load(word_distribution_dir)
@@ -51,7 +50,7 @@ def process_meta_word_distribution(context_size: int=4):
         word_freq = np.zeros([len(word_indexing)], dtype=int)
 
         # Read Meta data
-        with open(WORD_DISTRIBUTION_META_DIR, "r") as f:
+        with open(WORD_DISTRIBUTION.META_DIR, "r") as f:
             meta_word_distribution = json.load(f)
 
         # Get occurrence probability for each word
@@ -130,7 +129,7 @@ def load_global_word_distribution(max_samples: int=None, context_size: int=4, co
 
 def load_word(max_samples: int=None):
     # Read JSON
-    with open(WORD_DISTRIBUTION_META_DIR, "r") as f:
+    with open(WORD_DISTRIBUTION.META_DIR, "r") as f:
         meta_word_distribution = json.load(f)
 
     # Generate sample

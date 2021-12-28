@@ -5,8 +5,7 @@ import urllib.request
 from progressist import ProgressBar
 
 from ..BaseDataset import BaseDataset
-from ..path_config import BASE_DIR, STS_BASE_DIR, STS_TRAIN_DIR, STS_VAL_DIR, STS_TEST_DIR
-from ..url_config import STS_URL
+from ..config import BASE_DIR, STSB
 
 
 SIMILARITY_COL = 4
@@ -15,16 +14,16 @@ SENTENCE_2_COL = 6
 
 
 def download_sts():
-    if os.path.exists(STS_BASE_DIR):
+    if os.path.exists(STSB.PATH):
         return
     # Download STS
-    print(f"Downloading: {STS_URL}")
+    print(f"Downloading: {STSB.URL}")
     bar = ProgressBar(template="|{animation}| {done:B}/{total:B}")
-    _ = urllib.request.urlretrieve(STS_URL, STS_BASE_DIR + ".tar.gz", reporthook=bar.on_urlretrieve)
+    _ = urllib.request.urlretrieve(STSB.URL, STSB.PATH + ".tar.gz", reporthook=bar.on_urlretrieve)
     # Unzip file
-    shutil.unpack_archive(STS_BASE_DIR + ".tar.gz", BASE_DIR)
+    shutil.unpack_archive(STSB.PATH + ".tar.gz", BASE_DIR)
     # Remove zip file
-    os.remove(STS_BASE_DIR + ".tar.gz")
+    os.remove(STSB.PATH + ".tar.gz")
 
 
 def load_sts(max_samples=None, val_set=False, test_set=False):
@@ -44,11 +43,11 @@ def load_sts(max_samples=None, val_set=False, test_set=False):
                 yield similarity, sentence_1, sentence_2
     
     if val_set:
-        return _load_sts(STS_VAL_DIR)
+        return _load_sts(STSB.DEV_DIR)
     elif test_set:
-        return _load_sts(STS_TEST_DIR)
+        return _load_sts(STSB.TEST_DIR)
     else:
-        return _load_sts(STS_TRAIN_DIR)
+        return _load_sts(STSB.TRAIN_DIR)
 
 
 class STSDataset(BaseDataset):

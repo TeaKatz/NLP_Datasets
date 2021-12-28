@@ -66,6 +66,7 @@ class BaseDataset:
 
     def __init__(self, 
                 max_samples=None, 
+                max_seq_len=None,
                 train_split_ratio=0.8,
                 val_split_ratio=0.1,
                 test_split_ratio=0.1,
@@ -76,6 +77,7 @@ class BaseDataset:
                 local_dir=None):
 
         self.max_samples = max_samples
+        self.max_seq_len = max_seq_len
         self.train_split_ratio = train_split_ratio
         self.val_split_ratio = val_split_ratio
         self.test_split_ratio = test_split_ratio
@@ -100,19 +102,19 @@ class BaseDataset:
             os.makedirs(os.path.join(self.local_dir, "data"))
 
         # Load train set to disk
-        train_indices = self._load_data(self._load_train, sample_count=0)
+        train_indices = self._load_data(self._load_train, sample_count=0, mode="train")
 
         # Load val set to disk
         val_indices = []
         if self.val_split_ratio is None:
             assert self._load_val() is not None, "load_val method is not implemented"
-            val_indices = self._load_data(self._load_val, sample_count=len(train_indices))
+            val_indices = self._load_data(self._load_val, sample_count=len(train_indices), mode="val")
 
         # Load test set to disk
         test_indices = []
         if self.test_split_ratio is None:
             assert self._load_test() is not None, "load_test method is not implemented"
-            test_indices = self._load_data(self._load_test, sample_count=len(train_indices) + len(val_indices))
+            test_indices = self._load_data(self._load_test, sample_count=len(train_indices) + len(val_indices), mode="test")
 
         # Get split indices
         if self.val_split_ratio is not None and self.test_split_ratio is not None:
@@ -133,14 +135,14 @@ class BaseDataset:
         with open(os.path.join(self.local_dir, "test_dirs.txt"), "w") as f:
             f.write("\n".join([f"{idx}.pkl" for idx in test_indices]))
 
-    def _load_data(self, load_method, sample_count=0):
+    def _load_data(self, load_method, sample_count=0, mode="train"):
         indices = []
         for data in tqdm(load_method()):
             if os.path.exists(os.path.join(self.local_dir, "data", f"{sample_count}.pkl")):
                 continue
 
             # Transform data into sample
-            sample = self._process_data(data)
+            sample = self._process_data(data, mode=mode)
             # Dump sample to disk
             joblib.dump(sample, os.path.join(self.local_dir, "data", f"{sample_count}.pkl"))
 
@@ -218,6 +220,6 @@ class BaseDataset:
         pass
 
     @abstractmethod
-    def _process_data(self, data):
+    def _process_data(self, data, mode="train"):
         """ Preprocess and transform data into sample """
         pass

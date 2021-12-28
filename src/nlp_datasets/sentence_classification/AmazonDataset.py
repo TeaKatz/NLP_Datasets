@@ -7,8 +7,7 @@ import shutil
 from progressist import ProgressBar
 
 from ..BaseDataset import BaseDataset
-from ..path_config import AMAZON_DIRS, AMAZON_BASE_DIR, BASE_DIR
-from ..url_config import AMAZON_URLS
+from ..config import AMAZON
 
 
 star_rating_col = 7
@@ -17,11 +16,11 @@ review_body_col = 13
 
 
 def download_amazon():
-    if not os.path.exists(AMAZON_BASE_DIR):
-        os.makedirs(AMAZON_BASE_DIR)
+    if not os.path.exists(AMAZON.PATH):
+        os.makedirs(AMAZON.PATH)
 
-    for amazon_url in AMAZON_URLS:
-        amazon_dir = AMAZON_BASE_DIR + "/" + amazon_url.split("/")[-1].replace(".gz", "")
+    for amazon_url in AMAZON.URLS:
+        amazon_dir = AMAZON.PATH + "/" + amazon_url.split("/")[-1].replace(".gz", "")
         if not os.path.exists(amazon_dir):
             # Download Amazon
             print(f"Downloading: {amazon_url}")
@@ -37,7 +36,7 @@ def download_amazon():
 
 def load_corpus(max_samples=None):
     count = 0
-    for data_dir in AMAZON_DIRS:
+    for data_dir in AMAZON.TRAIN_DIRS:
         with open(data_dir, "r") as f:
             for i, line in enumerate(f):
                 # Skip the first line

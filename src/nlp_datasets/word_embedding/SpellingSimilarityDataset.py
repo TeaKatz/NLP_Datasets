@@ -2,30 +2,27 @@ import os
 
 from ..BaseDataset import BaseDataset
 from ..utilities import download_file_from_google_drive
-from ..path_config import SPELLING_SIMILARITY_BASE_DIR, SPELLING_SIMILARITY_ANAGRAMS_DIR, SPELLING_SIMILARITY_MISSPELLINGS_DIR, SPELLING_SIMILARITY_WORDS_DIR
-from ..url_config import SPELLING_SIMILARITY_ANAGRAMS_ID, SPELLING_SIMILARITY_ANAGRAMS_URL
-from ..url_config import SPELLING_SIMILARITY_MISSPELLINGS_ID, SPELLING_SIMILARITY_MISSPELLINGS_URL
-from ..url_config import SPELLING_SIMILARITY_WORDS_ID, SPELLING_SIMILARITY_WORDS_URL
+from ..config import SPELLING_SIMILARITY
 
 
 def download_corpus():
-    if not os.path.exists(SPELLING_SIMILARITY_BASE_DIR):
-        os.makedirs(SPELLING_SIMILARITY_BASE_DIR)
+    if not os.path.exists(SPELLING_SIMILARITY.PATH):
+        os.makedirs(SPELLING_SIMILARITY.PATH)
 
-    if not os.path.exists(SPELLING_SIMILARITY_ANAGRAMS_DIR):
+    if not os.path.exists(SPELLING_SIMILARITY.ANAGRAMS_DIR):
         # Download anagram_corpus.txt
-        print(f"Downloading: {SPELLING_SIMILARITY_ANAGRAMS_URL}")
-        download_file_from_google_drive(SPELLING_SIMILARITY_ANAGRAMS_ID, SPELLING_SIMILARITY_ANAGRAMS_DIR)
+        print(f"Downloading: {SPELLING_SIMILARITY.ANAGRAMS_URL}")
+        download_file_from_google_drive(SPELLING_SIMILARITY.ANAGRAMS_ID, SPELLING_SIMILARITY.ANAGRAMS_DIR)
 
-    if not os.path.exists(SPELLING_SIMILARITY_MISSPELLINGS_DIR):
+    if not os.path.exists(SPELLING_SIMILARITY.MISSPELLINGS_DIR):
         # Download misspellings_corpus.txt
-        print(f"Downloading: {SPELLING_SIMILARITY_MISSPELLINGS_URL}")
-        download_file_from_google_drive(SPELLING_SIMILARITY_MISSPELLINGS_ID, SPELLING_SIMILARITY_MISSPELLINGS_DIR)
+        print(f"Downloading: {SPELLING_SIMILARITY.MISSPELLINGS_URL}")
+        download_file_from_google_drive(SPELLING_SIMILARITY.MISSPELLINGS_ID, SPELLING_SIMILARITY.MISSPELLINGS_DIR)
 
-    if not os.path.exists(SPELLING_SIMILARITY_WORDS_DIR):
+    if not os.path.exists(SPELLING_SIMILARITY.WORDS_DIR):
         # Download words_corpus.txt
-        print(f"Downloading: {SPELLING_SIMILARITY_WORDS_URL}")
-        download_file_from_google_drive(SPELLING_SIMILARITY_WORDS_ID, SPELLING_SIMILARITY_WORDS_DIR)
+        print(f"Downloading: {SPELLING_SIMILARITY.WORDS_URL}")
+        download_file_from_google_drive(SPELLING_SIMILARITY.WORDS_ID, SPELLING_SIMILARITY.WORDS_DIR)
     
 
 def load_corpus(max_samples: int=None, include_word: bool=True, include_anagram: bool=True, include_misspelling: bool=True):
@@ -38,21 +35,21 @@ def load_corpus(max_samples: int=None, include_word: bool=True, include_anagram:
 
     count = 0
     if include_word:
-        for word1, word2, similarity in _load_corpus(SPELLING_SIMILARITY_WORDS_DIR):
+        for word1, word2, similarity in _load_corpus(SPELLING_SIMILARITY.WORDS_DIR):
             count += 1
             # Terminate by max_samples
             if (max_samples is not None) and (count > max_samples):
                 break
             yield word1, word2, similarity
     if include_anagram:
-        for word1, word2, similarity in _load_corpus(SPELLING_SIMILARITY_ANAGRAMS_DIR):
+        for word1, word2, similarity in _load_corpus(SPELLING_SIMILARITY.ANAGRAMS_DIR):
             count += 1
             # Terminate by max_samples
             if (max_samples is not None) and (count > max_samples):
                 break
             yield word1, word2, similarity
     if include_misspelling:
-        for word1, word2, similarity in _load_corpus(SPELLING_SIMILARITY_MISSPELLINGS_DIR):
+        for word1, word2, similarity in _load_corpus(SPELLING_SIMILARITY.MISSPELLINGS_DIR):
             count += 1
             # Terminate by max_samples
             if (max_samples is not None) and (count > max_samples):

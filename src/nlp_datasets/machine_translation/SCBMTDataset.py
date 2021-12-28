@@ -7,20 +7,19 @@ import pandas as pd
 from progressist import ProgressBar
 
 from ..BaseDataset import BaseDataset
-from ..path_config import SCBMT_DIRS, SCBMT_BASE_DIR, BASE_DIR
-from ..url_config import SCBMT_URL
+from ..config import BASE_DIR, SCBMT
 
 
 def download_scbmt():
     if not os.path.exists(BASE_DIR):
         os.makedirs(BASE_DIR)
         
-    if os.path.exists(SCBMT_BASE_DIR):
+    if os.path.exists(SCBMT.PATH):
         return
     # Download SCBTMT
-    print(f"Downloading: {SCBMT_URL}")
+    print(f"Downloading: {SCBMT.URL}")
     bar = ProgressBar(template="|{animation}| {done:B}/{total:B}")
-    local_dir, _ = urllib.request.urlretrieve(SCBMT_URL, BASE_DIR + "/scb-mt-en-th-2020.zip", reporthook=bar.on_urlretrieve)
+    local_dir, _ = urllib.request.urlretrieve(SCBMT.URL, BASE_DIR + "/scb-mt-en-th-2020.zip", reporthook=bar.on_urlretrieve)
     # Unzip file
     with zipfile.ZipFile(local_dir, 'r') as zip_ref:
         zip_ref.extractall(BASE_DIR)
@@ -30,7 +29,7 @@ def download_scbmt():
 
 def load_scbmt(max_samples: int=None):
     count = 0
-    for dir in SCBMT_DIRS:
+    for dir in SCBMT.TRAIN_DIRS:
         dataframe = pd.read_csv(dir)
         for en_sentence, th_sentence in zip(dataframe["en_text"], dataframe["th_text"]):
             count += 1

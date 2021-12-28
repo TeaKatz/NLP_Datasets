@@ -8,9 +8,7 @@ from tqdm import tqdm
 from progressist import ProgressBar
 
 from ..BaseDataset import BaseDataset
-from ..path_config import BASE_DIR, MNLI_BASE_DIR, MNLI_TRAIN_DIR, MNLI_VAL_DIR, MNLI_TEST_DIR
-from ..path_config import MNLI_REFINED_TRAIN_DIR, MNLI_REFINED_VAL_DIR, MNLI_REFINED_TEST_DIR
-from ..url_config import MNLI_URL
+from ..config import BASE_DIR, MNLI
 
 
 LABEL_COL = 0
@@ -29,18 +27,18 @@ CONTRADICTION_COL = 2
 
 
 def download_mnli():
-    if os.path.exists(MNLI_BASE_DIR):
+    if os.path.exists(MNLI.PATH):
         return
     # Download MNLI
-    print(f"Downloading: {MNLI_URL}")
+    print(f"Downloading: {MNLI.URL}")
     bar = ProgressBar(template="|{animation}| {done:B}/{total:B}")
-    _ = urllib.request.urlretrieve(MNLI_URL, MNLI_BASE_DIR + ".zip", reporthook=bar.on_urlretrieve)
+    _ = urllib.request.urlretrieve(MNLI.URL, MNLI.PATH + ".zip", reporthook=bar.on_urlretrieve)
     # Unzip file
-    shutil.unpack_archive(MNLI_BASE_DIR + ".zip", BASE_DIR)
+    shutil.unpack_archive(MNLI.PATH + ".zip", BASE_DIR)
     # Rename extracted file
-    os.rename(MNLI_BASE_DIR + "_1.0", MNLI_BASE_DIR)
+    os.rename(MNLI.PATH + "_1.0", MNLI.PATH)
     # Remove zip file
-    os.remove(MNLI_BASE_DIR + ".zip")
+    os.remove(MNLI.PATH + ".zip")
 
 
 def load_mnli(max_samples=None, val_set=False, test_set=False, valid_labels=("contradiction", "neutral", "entailment")):
@@ -64,11 +62,11 @@ def load_mnli(max_samples=None, val_set=False, test_set=False, valid_labels=("co
                     yield label, sentence_1, sentence_2
 
     if val_set:
-        return _load_mnli(MNLI_VAL_DIR)
+        return _load_mnli(MNLI.DEV_DIR)
     elif test_set:
-        return _load_mnli(MNLI_TEST_DIR)
+        return _load_mnli(MNLI.TEST_DIR)
     else:
-        return _load_mnli(MNLI_TRAIN_DIR)
+        return _load_mnli(MNLI.TRAIN_DIR)
 
 
 class MNLIDataset(BaseDataset):
@@ -141,12 +139,12 @@ def create_refined_mnli():
         dataframe = pd.DataFrame(data)
         dataframe.to_csv(destination_dir, index=False)
 
-    if not os.path.exists(MNLI_REFINED_TRAIN_DIR):
-        _create_refined_mnli(MNLI_TRAIN_DIR, MNLI_REFINED_TRAIN_DIR)
-    if not os.path.exists(MNLI_REFINED_VAL_DIR):
-        _create_refined_mnli(MNLI_VAL_DIR, MNLI_REFINED_VAL_DIR)
-    if not os.path.exists(MNLI_REFINED_TEST_DIR):
-        _create_refined_mnli(MNLI_TEST_DIR, MNLI_REFINED_TEST_DIR)
+    if not os.path.exists(MNLI.REFINED_TRAIN_DIR):
+        _create_refined_mnli(MNLI.TRAIN_DIR, MNLI.REFINED_TRAIN_DIR)
+    if not os.path.exists(MNLI.REFINED_DEV_DIR):
+        _create_refined_mnli(MNLI.DEV_DIR, MNLI.REFINED_DEV_DIR)
+    if not os.path.exists(MNLI.REFINED_TEST_DIR):
+        _create_refined_mnli(MNLI.TEST_DIR, MNLI.REFINED_TEST_DIR)
 
 
 def load_refined_mnli(max_samples=None, val_set=False, test_set=False):
@@ -161,11 +159,11 @@ def load_refined_mnli(max_samples=None, val_set=False, test_set=False):
             yield str(premise), str(entailment), str(neutral), str(contradiction)
 
     if val_set:
-        return _load_refined_mnli(MNLI_REFINED_VAL_DIR)
+        return _load_refined_mnli(MNLI.REFINED_DEV_DIR)
     elif test_set:
-        return _load_refined_mnli(MNLI_REFINED_TEST_DIR)
+        return _load_refined_mnli(MNLI.REFINED_TEST_DIR)
     else:
-        return _load_refined_mnli(MNLI_REFINED_TRAIN_DIR)
+        return _load_refined_mnli(MNLI.REFINED_TRAIN_DIR)
 
 
 class RefinedMNLIDataset(BaseDataset):

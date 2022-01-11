@@ -70,17 +70,33 @@ class BaseDataset:
                 train_split_ratio=0.8,
                 val_split_ratio=0.1,
                 test_split_ratio=0.1,
+                filter=None,
+                rebuild=False,
                 batch_size=None, 
                 shuffle=False, 
                 drop_last=False,
                 random_seed=0, 
                 local_dir=None):
 
+        if filter is not None:
+            if isinstance(filter, list) or isinstance(filter, tuple):
+                assert len(filter) == 3, "You enter filter as a list, it must has length of 3 for train, val and test sets."
+                if filter[0] is not None:
+                    print("Filter will be applied to training set.")
+                if filter[1] is not None:
+                    print("Filter will be applied to validation set.")
+                if filter[2] is not None:
+                    print("Filter will be applied to test set.")
+            else:
+                filter = (filter, filter, filter)
+
         self.max_samples = max_samples
         self.max_seq_len = max_seq_len
         self.train_split_ratio = train_split_ratio
         self.val_split_ratio = val_split_ratio
         self.test_split_ratio = test_split_ratio
+        self.filter = filter
+        self.rebuild = rebuild
         self.batch_size = batch_size
         self.shuffle = shuffle
         self.drop_last = drop_last
@@ -89,7 +105,8 @@ class BaseDataset:
 
         if not os.path.exists(os.path.join(self.local_dir, "train_dirs.txt")) or \
                 not os.path.exists(os.path.join(self.local_dir, "val_dirs.txt")) or \
-                not os.path.exists(os.path.join(self.local_dir, "test_dirs.txt")):
+                not os.path.exists(os.path.join(self.local_dir, "test_dirs.txt")) or \
+                self.rebuild:
             # Build dataset to disk
             self._build()
 
@@ -138,8 +155,17 @@ class BaseDataset:
     def _load_data(self, load_method, sample_count=0, mode="train"):
         indices = []
         for data in tqdm(load_method()):
-            if os.path.exists(os.path.join(self.local_dir, "data", f"{sample_count}.pkl")):
+            if not self.rebuild and os.path.exists(os.path.join(self.local_dir, "data", f"{sample_count}.pkl")):
                 continue
+
+            # Filter data
+            if self.filter is not None:
+                if mode == "train" and self.filter[0] is not None and not self.filter[0](data):
+                    continue
+                elif mode == "val" and self.filter[1] is not None and not self.filter[1](data):
+                    continue
+                elif mode == "test" and self.filter[2] is not None and not self.filter[2](data):
+                    continue
 
             # Transform data into sample
             sample = self._process_data(data, mode=mode)

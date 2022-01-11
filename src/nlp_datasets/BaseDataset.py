@@ -8,11 +8,12 @@ from torch.utils.data import Dataset
 
 
 class DatasetGenerator(Dataset):
-    def __init__(self, data_dirs, batch_size=None, shuffle=False, drop_last=False):
+    def __init__(self, data_dirs, batch_size=None, shuffle=False, drop_last=False, random_seed=0):
         self.data_dirs = data_dirs
         self.batch_size = batch_size
         self.shuffle = shuffle
         self.drop_last = drop_last
+        self.random_seed = random_seed
         self.preprocessor = None
 
         if self.batch_size is None:
@@ -24,6 +25,7 @@ class DatasetGenerator(Dataset):
 
         self.sample_indices = np.arange(len(self.data_dirs))
         if self.shuffle: 
+            np.random.seed(self.random_seed)
             np.random.shuffle(self.sample_indices)
         self.counter = 0
 
@@ -37,6 +39,7 @@ class DatasetGenerator(Dataset):
         self.counter += 1
         if self.counter >= self.batch_num:
             if self.shuffle: 
+                np.random.seed(self.random_seed)
                 np.random.shuffle(self.sample_indices)
             self.counter = 0
 
@@ -198,15 +201,18 @@ class BaseDataset:
         train = DatasetGenerator([os.path.join(self.local_dir, "data", file_name) for file_name in train_dirs], 
                                  batch_size=self.batch_size, 
                                  shuffle=self.shuffle, 
-                                 drop_last=self.drop_last)
+                                 drop_last=self.drop_last,
+                                 random_seed=self.random_seed)
         val = DatasetGenerator([os.path.join(self.local_dir, "data", file_name) for file_name in val_dirs], 
                                batch_size=self.batch_size, 
                                shuffle=self.shuffle, 
-                               drop_last=self.drop_last)
+                               drop_last=self.drop_last,
+                               random_seed=self.random_seed)
         test = DatasetGenerator([os.path.join(self.local_dir, "data", file_name) for file_name in test_dirs], 
                                 batch_size=self.batch_size, 
                                 shuffle=self.shuffle, 
-                                drop_last=self.drop_last)
+                                drop_last=self.drop_last,
+                                random_seed=self.random_seed)
         return train, val, test
 
     def _get_split_indices(self, indices):

@@ -95,7 +95,7 @@ class MNLIDataset(BaseDataset):
     def _load_test(self):
         return load_mnli(max_samples=self.max_samples, test_set=True, valid_labels=self.valid_labels)
 
-    def _process_data(self, data):
+    def _process_data(self, data, **kwargs):
         # Extract data
         # label: (contradiction, neutral, entailment)
         label, sentence_1, sentence_2 = data
@@ -191,7 +191,7 @@ class RefinedMNLIDataset(BaseDataset):
     def _load_test(self):
         return load_refined_mnli(max_samples=self.max_samples, test_set=True)
 
-    def _process_data(self, data):
+    def _process_data(self, data, **kwargs):
         # Extract data
         premise, entailment, neutral, contradiction = data
 

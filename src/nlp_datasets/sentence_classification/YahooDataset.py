@@ -78,7 +78,7 @@ class YahooDataset(BaseDataset):
         for label, title_text, content_text, answer_text in load_yahoo(max_samples=self.max_samples, test_set=True):
             yield label, title_text, content_text, answer_text
 
-    def _process_data(self, data):
+    def _process_data(self, data, **kwargs):
         # Extract data
         label, title_text, content_text, answer_text = data
 

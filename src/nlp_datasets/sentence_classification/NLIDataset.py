@@ -55,7 +55,7 @@ class NLIDataset(BaseDataset):
         for label, sentence_1, sentence_2 in load_mnli(max_samples=mnli_max_samples, test_set=True):
             yield label, sentence_1, sentence_2
 
-    def _process_data(self, data):
+    def _process_data(self, data, **kwargs):
         # Extract data
         # label: (contradiction, neutral, entailment)
         label, sentence_1, sentence_2 = data
@@ -110,7 +110,7 @@ class RefinedNLIDataset(BaseDataset):
         for premise, entailment, neutral, contradiction in load_refined_mnli(max_samples=mnli_max_samples, test_set=True):
             yield premise, entailment, neutral, contradiction
 
-    def _process_data(self, data):
+    def _process_data(self, data, **kwargs):
         # Extract data
         premise, entailment, neutral, contradiction = data
 
@@ -160,7 +160,7 @@ class SimcseNLIDataset(BaseDataset):
     def _load_train(self):
         return load_simcse_nli(max_samples=self.max_samples)
 
-    def _process_data(self, data):
+    def _process_data(self, data, **kwargs):
         # Extract data
         premise, entailment, contradiction = data
 

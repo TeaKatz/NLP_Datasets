@@ -176,7 +176,7 @@ class LocalWordDistributionDataset(BaseDataset):
         """ Yield data from test set """
         pass
 
-    def _process_data(self, data):
+    def _process_data(self, data, **kwargs):
         """ Preprocess and transform data into sample """
         # Extract data
         target_word, context_words, non_context_words = data
@@ -219,7 +219,7 @@ class GlobalWordDistributionDataset(BaseDataset):
         """ Yield data from test set """
         pass
 
-    def _process_data(self, data):
+    def _process_data(self, data, **kwargs):
         """ Preprocess and transform data into sample """
         # Extract data
         target_word, context_words = data
@@ -251,7 +251,7 @@ class WordDataset(BaseDataset):
         """ Yield data from test set """
         pass
 
-    def _process_data(self, data):
+    def _process_data(self, data, **kwargs):
         """ Preprocess and transform data into sample """
         # Extract data
         word = data

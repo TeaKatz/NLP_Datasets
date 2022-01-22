@@ -83,7 +83,7 @@ class WordAudioDataset(BaseDataset):
         """ Yield data from test set """
         pass
 
-    def _process_data(self, data):
+    def _process_data(self, data, **kwargs):
         """ Preprocess and transform data into sample """
         # Extract data
         word, audio = data
@@ -122,7 +122,7 @@ class WordAudioWithNegativeSamples(BaseDataset):
         """ Yield data from test set """
         pass
 
-    def _process_data(self, data):
+    def _process_data(self, data, **kwargs):
         """ Preprocess and transform data into sample """
         # Extract data
         pos_word, pos_audio, neg_words, neg_audios = data

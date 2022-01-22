@@ -132,7 +132,7 @@ class Word2SpeechDataset(BaseDataset):
         """ Yield data from test set """
         pass
 
-    def _process_data(self, data):
+    def _process_data(self, data, **kwargs):
         """ Preprocess and transform data into sample """
         # Extract data
         word, audio = data

@@ -74,7 +74,7 @@ class STSDataset(BaseDataset):
     def _load_test(self):
         return load_sts(max_samples=self.max_samples, test_set=True)
 
-    def _process_data(self, data):
+    def _process_data(self, data, **kwargs):
         # Extract data
         similarity, sentence_1, sentence_2 = data
 

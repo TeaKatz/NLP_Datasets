@@ -56,7 +56,7 @@ class SCBMTDataset(BaseDataset):
     def _load_test(self):
         pass
 
-    def _process_data(self, data):
+    def _process_data(self, data, **kwargs):
         # Extract data
         en_sentence, th_sentence = data
 

@@ -88,7 +88,7 @@ class SpellingSimilarityDataset(BaseDataset):
         """ Yield data from test set """
         pass
 
-    def _process_data(self, data):
+    def _process_data(self, data, **kwargs):
         """ Preprocess and transform data into sample """
         # Extract data
         word1, word2, similarity = data

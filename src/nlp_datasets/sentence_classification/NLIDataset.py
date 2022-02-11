@@ -167,3 +167,43 @@ class SimcseNLIDataset(BaseDataset):
         # Transform data into sample
         sample = {"premise": premise, "entailment": entailment, "contradiction": contradiction}
         return sample
+
+
+def load_raw_simcse_nli(max_samples=None):
+    count = 0
+    dataframe = pd.read_csv(SIMCSE_NLI.TRAIN_DIR)
+    for premise, entailment, contradiction in dataframe.values.tolist():
+        count += 1
+        # Terminate by max_samples
+        if (max_samples is not None) and (count > max_samples):
+            break
+        yield str(premise)
+        yield str(entailment)
+        yield str(contradiction)
+
+
+class RawSimcseNLIDataset(BaseDataset):
+    local_dir = "raw_simcse_nli_dataset"
+
+    def __init__(self,
+                 train_split_ratio=1.0,
+                 val_split_ratio=0.0,
+                 test_split_ratio=0.0,
+                 **kwargs):
+
+        download_simcse_nli()
+        super().__init__(train_split_ratio=train_split_ratio, 
+                         val_split_ratio=val_split_ratio, 
+                         test_split_ratio=test_split_ratio, 
+                         **kwargs)
+
+    def _load_train(self):
+        return load_raw_simcse_nli(max_samples=self.max_samples)
+
+    def _process_data(self, data, **kwargs):
+        # Extract data
+        sentence = data
+
+        # Transform data into sample
+        sample = {"sentence": sentence}
+        return sample

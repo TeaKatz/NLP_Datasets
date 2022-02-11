@@ -5,7 +5,7 @@ from .sentence_classification import YahooDataset
 from .sentence_classification import STSDataset
 from .sentence_classification import SNLIDataset, RefinedSNLIDataset
 from .sentence_classification import MNLIDataset, RefinedMNLIDataset
-from .sentence_classification import NLIDataset, RefinedNLIDataset, SimcseNLIDataset
+from .sentence_classification import NLIDataset, RefinedNLIDataset, SimcseNLIDataset, RawSimcseNLIDataset
 
 from .text_to_speech import WordAudioDataset
 from .text_to_speech import WordAudioWithNegativeSamples

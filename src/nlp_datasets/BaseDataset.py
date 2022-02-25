@@ -10,11 +10,12 @@ from torch.utils.data import Dataset
 class DatasetGenerator(Dataset):
     def __init__(self, data_dirs, batch_size=None, shuffle=False, drop_last=False, random_seed=0):
         self.data_dirs = data_dirs
+        self.preprocessed_dirs = None
         self.batch_size = batch_size
         self.shuffle = shuffle
         self.drop_last = drop_last
         self.random_seed = random_seed
-        self.preprocessor = None
+        self.OTFprocessor = None
 
         if self.batch_size is None:
             self.batch_num = len(self.data_dirs)
@@ -32,6 +33,24 @@ class DatasetGenerator(Dataset):
     def __len__(self):
         return self.batch_num
 
+    def get_samples(self, batch_index):
+        if self.batch_size is None:
+            if self.preprocessed_dirs is not None:
+                samples = joblib.load(self.preprocessed_dirs[batch_index])
+            else:
+                samples = joblib.load(self.data_dirs[batch_index])
+        else:
+            samples = []
+            start_index = batch_index * self.batch_size
+            end_index = (batch_index + 1) * self.batch_size
+            for sample_index in self.sample_indices[start_index:end_index]:
+                if self.preprocessed_dirs is not None:
+                    sample = joblib.load(self.preprocessed_dirs[sample_index])
+                else:
+                    sample = joblib.load(self.data_dirs[sample_index])
+                samples.append(sample)
+        return samples
+
     def __getitem__(self, batch_index):
         if batch_index >= len(self): 
             raise IndexError
@@ -43,25 +62,37 @@ class DatasetGenerator(Dataset):
                 np.random.shuffle(self.sample_indices)
             self.counter = 0
 
-        if self.batch_size is None:
-            samples = joblib.load(self.data_dirs[batch_index])
-        else:
-            samples = []
-            start_index = batch_index * self.batch_size
-            end_index = (batch_index + 1) * self.batch_size
-            for sample_index in self.sample_indices[start_index:end_index]:
-                sample = joblib.load(self.data_dirs[sample_index])
-                samples.append(sample)
+        samples = self.get_samples(batch_index)
 
-        if self.preprocessor is not None:
-            samples = self.preprocessor(samples)
+        if self.OTFprocessor is not None:
+            samples = self.OTFprocessor(samples)
         return samples
 
-    def set_preprocessor(self, preprocessor):
-        self.preprocessor = preprocessor
+    def apply_preprocessor(self, preprocessor, name="preprocessed", rebuild=False):
+        preprocessed_dir = self.data_dirs[0].split("/")[:-1]
+        preprocessed_dir[-1] = name
+        preprocessed_dir = os.path.join(*preprocessed_dir)
+        self.preprocessed_dirs = []
+        for i in tqdm(range(len(self.data_dirs))):
+            file_name = self.data_dirs[i].split("/")[-1]
+            self.preprocessed_dirs.append(preprocessed_dir + "/" + file_name)
+            if not os.path.exists(self.preprocessed_dirs[-1]) or rebuild:
+                sample = joblib.load(self.data_dirs[i])
+                sample = preprocessor(sample)
+                joblib.dump(sample, self.preprocessed_dirs[-1])
 
+    def set_OTFprocessor(self, OTFprocessor):
+        self.OTFprocessor = OTFprocessor
+
+    def clear_OTFprocessor(self):
+        self.OTFprocessor = None
+
+    # Obsoleted
+    def set_preprocessor(self, OTFprocessor):
+        self.OTFprocessor = OTFprocessor
+    # Obsoleted
     def clear_preprocessor(self):
-        self.preprocessor = None
+        self.OTFprocessor = None
 
 
 class BaseDataset:

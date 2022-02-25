@@ -77,7 +77,7 @@ class DatasetGenerator(Dataset):
         preprocessed_dir[-1] = name
         preprocessed_dir = os.path.join(*preprocessed_dir)
         self.preprocessed_dirs = []
-        for i in tqdm(range(len(self.data_dirs))):
+        for i in tqdm(range(len(self.data_dirs)), total=len(self.data_dirs)):
             file_name = self.data_dirs[i].split("/")[-1]
             self.preprocessed_dirs.append(preprocessed_dir + "/" + file_name)
             if not os.path.exists(self.preprocessed_dirs[-1]) or rebuild:

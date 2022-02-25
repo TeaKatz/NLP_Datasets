@@ -69,6 +69,10 @@ class DatasetGenerator(Dataset):
         return samples
 
     def apply_preprocessor(self, preprocessor, name="preprocessed", rebuild=False):
+        """
+        Preprocessor is applied to each sample only once and saved to a disk before training.
+        Usually it is used for data augmentations.
+        """
         preprocessed_dir = self.data_dirs[0].split("/")[:-1]
         preprocessed_dir[-1] = name
         preprocessed_dir = os.path.join(*preprocessed_dir)
@@ -82,6 +86,10 @@ class DatasetGenerator(Dataset):
                 joblib.dump(sample, self.preprocessed_dirs[-1])
 
     def set_OTFprocessor(self, OTFprocessor):
+        """
+        OTFprocessor (On-the-fly-processor) is applied to mini-batch or sample during training.
+        Usually is it used for tokenization (words -> ids).
+        """
         self.OTFprocessor = OTFprocessor
 
     def clear_OTFprocessor(self):

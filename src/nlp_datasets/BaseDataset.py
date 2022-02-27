@@ -75,7 +75,10 @@ class DatasetGenerator(Dataset):
         """
         preprocessed_dir = self.data_dirs[0].split("/")[:-1]
         preprocessed_dir[-1] = name
-        preprocessed_dir = os.path.join(*preprocessed_dir)
+        preprocessed_dir = "/" + os.path.join(*preprocessed_dir)
+        if not os.path.exists(preprocessed_dir):
+            os.makedirs(preprocessed_dir)
+
         self.preprocessed_dirs = []
         for i in tqdm(range(len(self.data_dirs)), total=len(self.data_dirs)):
             file_name = self.data_dirs[i].split("/")[-1]

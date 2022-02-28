@@ -33,26 +33,34 @@ class DatasetGenerator(Dataset):
     def __len__(self):
         return self.batch_num
 
-    def get_samples(self, batch_index):
+    def get_sample_dirs(self, index, allow_preprocessed=True):
         if self.batch_size is None:
-            if self.preprocessed_dirs is not None:
-                samples = joblib.load(self.preprocessed_dirs[batch_index])
+            if self.preprocessed_dirs is not None and allow_preprocessed:
+                sample_dirs = self.preprocessed_dirs[index]
             else:
-                samples = joblib.load(self.data_dirs[batch_index])
+                sample_dirs = self.data_dirs[index]
         else:
-            samples = []
-            start_index = batch_index * self.batch_size
-            end_index = (batch_index + 1) * self.batch_size
+            sample_dirs = []
+            start_index = index * self.batch_size
+            end_index = (index + 1) * self.batch_size
             for sample_index in self.sample_indices[start_index:end_index]:
-                if self.preprocessed_dirs is not None:
-                    sample = joblib.load(self.preprocessed_dirs[sample_index])
+                if self.preprocessed_dirs is not None and allow_preprocessed:
+                    sample_dir = self.preprocessed_dirs[sample_index]
                 else:
-                    sample = joblib.load(self.data_dirs[sample_index])
-                samples.append(sample)
+                    sample_dir = self.data_dirs[sample_index]
+                sample_dirs.append(sample_dir)
+        return sample_dirs
+
+    def get_samples(self, index, allow_preprocessed=True):
+        sample_dirs = self.get_sample_dirs(index, allow_preprocessed=allow_preprocessed)
+        if isinstance(sample_dirs, list):
+            samples = [joblib.load(sample_dir) for sample_dir in sample_dirs]
+        else:
+            samples = joblib.load(sample_dirs)
         return samples
 
-    def __getitem__(self, batch_index):
-        if batch_index >= len(self): 
+    def __getitem__(self, index):
+        if index >= len(self): 
             raise IndexError
 
         self.counter += 1
@@ -62,17 +70,20 @@ class DatasetGenerator(Dataset):
                 np.random.shuffle(self.sample_indices)
             self.counter = 0
 
-        samples = self.get_samples(batch_index)
+        samples = self.get_samples(index, allow_preprocessed=True)
 
         if self.OTFprocessor is not None:
             samples = self.OTFprocessor(samples)
         return samples
 
-    def apply_preprocessor(self, preprocessor, name="preprocessed", rebuild=False):
+    def apply_preprocessor(self, preprocessor=None, name="preprocessed", rebuild=False):
         """
         Preprocessor is applied to each sample only once and saved to a disk before training.
-        Usually it is used for data augmentations.
+        Usually it is used for one-shot data augmentations.
+
+        If preprocessor is None, this method will load from a disk.
         """
+        # Prepare directory
         preprocessed_dir = self.data_dirs[0].split("/")[:-1]
         preprocessed_dir[-1] = name
         preprocessed_dir = "/" + os.path.join(*preprocessed_dir)
@@ -80,18 +91,43 @@ class DatasetGenerator(Dataset):
             os.makedirs(preprocessed_dir)
 
         self.preprocessed_dirs = []
-        for i in tqdm(range(len(self.data_dirs)), total=len(self.data_dirs)):
-            file_name = self.data_dirs[i].split("/")[-1]
-            self.preprocessed_dirs.append(preprocessed_dir + "/" + file_name)
-            if not os.path.exists(self.preprocessed_dirs[-1]) or rebuild:
-                sample = joblib.load(self.data_dirs[i])
-                sample = preprocessor(sample)
-                joblib.dump(sample, self.preprocessed_dirs[-1])
+        for index in tqdm(range(self.batch_num), total=self.batch_num):
+            # Load samples (can be a sample or a batch depending on the batch_size setting)
+            # samples, sample_dirs = self.get_samples(index, allow_preprocessed=False)
+            sample_dirs = self.get_sample_dirs(index, allow_preprocessed=False)
+
+            if isinstance(sample_dirs, list):
+                sample_names = [sample_dir.split("/")[-1] for sample_dir in sample_dirs]
+                preprocessed_dirs = [preprocessed_dir + "/" + sample_name for sample_name in sample_names]
+                self.preprocessed_dirs.extend(preprocessed_dirs)
+                # If any sample in the batch missing, reprocess the whole batch
+                for preprocessed_dir in preprocessed_dirs:
+                    if not os.path.exists(preprocessed_dir) or rebuild:
+                        if preprocessor is not None:
+                            samples = self.get_samples(index, allow_preprocessed=False)
+                            processed_samples = preprocessor(samples)
+                            for processed_sample, preprocessed_dir in zip(processed_samples, preprocessed_dirs):
+                                joblib.dump(processed_sample, preprocessed_dir)
+                            break
+                        else:
+                            raise Exception(f"Preprocessing {sample_name} is not found! Please provide preprocessor.")
+            else:
+                # Loaded samples as a sample
+                sample_name = sample_dirs.split("/")[-1]
+                preprocessed_dir = preprocessed_dir + "/" + sample_name
+                self.preprocessed_dirs.append(preprocessed_dir)
+                if not os.path.exists(preprocessed_dir) or rebuild:
+                    if preprocessor is not None:
+                        sample = self.get_samples(index, allow_preprocessed=False)
+                        processed_sample = preprocessor(sample)
+                        joblib.dump(processed_sample, preprocessed_dir)
+                    else:
+                        raise Exception(f"Preprocessing {sample_name} is not found! Please provide preprocessor.")
 
     def set_OTFprocessor(self, OTFprocessor):
         """
         OTFprocessor (On-the-fly-processor) is applied to mini-batch or sample during training.
-        Usually is it used for tokenization (words -> ids).
+        Usually it is used for tokenization (words -> ids) or on-the-fly augmentations.
         """
         self.OTFprocessor = OTFprocessor
 

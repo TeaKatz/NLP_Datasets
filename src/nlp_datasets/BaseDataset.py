@@ -20,7 +20,7 @@ class DatasetGenerator(Dataset):
         if self.batch_size is None:
             self.batch_num = len(self.data_dirs)
         else:
-            self.batch_num = math.floor(len(self.data_dirs) / self.batch_size)
+            self.batch_num = math.ceil(len(self.data_dirs) / self.batch_size)
             if self.drop_last and len(self.data_dirs) % self.batch_size != 0:
                 self.batch_num = self.batch_num - 1
 
@@ -84,11 +84,14 @@ class DatasetGenerator(Dataset):
         If preprocessor is None, this method will load from a disk.
         """
         # Prepare directory
-        preprocessed_dir = self.data_dirs[0].split("/")[:-1]
-        preprocessed_dir[-1] = name
-        preprocessed_dir = "/" + os.path.join(*preprocessed_dir)
-        if not os.path.exists(preprocessed_dir):
-            os.makedirs(preprocessed_dir)
+        preprocessed_base_dir = self.data_dirs[0].split("/")[:-1]
+        preprocessed_base_dir[-1] = name
+        preprocessed_base_dir = "/" + os.path.join(*preprocessed_base_dir)
+        if not os.path.exists(preprocessed_base_dir):
+            os.makedirs(preprocessed_base_dir)
+
+        # Get list of existed files
+        existed_files = set(os.listdir(preprocessed_base_dir))
 
         self.preprocessed_dirs = []
         for index in tqdm(range(self.batch_num), total=self.batch_num):
@@ -98,11 +101,11 @@ class DatasetGenerator(Dataset):
 
             if isinstance(sample_dirs, list):
                 sample_names = [sample_dir.split("/")[-1] for sample_dir in sample_dirs]
-                preprocessed_dirs = [preprocessed_dir + "/" + sample_name for sample_name in sample_names]
+                preprocessed_dirs = [preprocessed_base_dir + "/" + sample_name for sample_name in sample_names]
                 self.preprocessed_dirs.extend(preprocessed_dirs)
                 # If any sample in the batch missing, reprocess the whole batch
-                for preprocessed_dir in preprocessed_dirs:
-                    if not os.path.exists(preprocessed_dir) or rebuild:
+                for preprocessed_dir, sample_name in zip(preprocessed_dirs, sample_names):
+                    if sample_name not in existed_files or rebuild:
                         if preprocessor is not None:
                             samples = self.get_samples(index, allow_preprocessed=False)
                             processed_samples = preprocessor(samples)
@@ -114,15 +117,18 @@ class DatasetGenerator(Dataset):
             else:
                 # Loaded samples as a sample
                 sample_name = sample_dirs.split("/")[-1]
-                preprocessed_dir = preprocessed_dir + "/" + sample_name
+                preprocessed_dir = preprocessed_base_dir + "/" + sample_name
                 self.preprocessed_dirs.append(preprocessed_dir)
-                if not os.path.exists(preprocessed_dir) or rebuild:
+                if sample_name not in existed_files or rebuild:
                     if preprocessor is not None:
                         sample = self.get_samples(index, allow_preprocessed=False)
                         processed_sample = preprocessor(sample)
                         joblib.dump(processed_sample, preprocessed_dir)
                     else:
                         raise Exception(f"Preprocessing {sample_name} is not found! Please provide preprocessor.")
+        
+        assert len(self.preprocessed_dirs) == len(self.data_dirs)
+        print("Preprocessing computed!")
 
     def set_OTFprocessor(self, OTFprocessor):
         """

@@ -96,7 +96,6 @@ class DatasetGenerator(Dataset):
         self.preprocessed_dirs = []
         for index in tqdm(range(self.batch_num), total=self.batch_num):
             # Load samples (can be a sample or a batch depending on the batch_size setting)
-            # samples, sample_dirs = self.get_samples(index, allow_preprocessed=False)
             sample_dirs = self.get_sample_dirs(index, allow_preprocessed=False)
 
             if isinstance(sample_dirs, list):

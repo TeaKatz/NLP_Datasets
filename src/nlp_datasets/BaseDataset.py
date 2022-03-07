@@ -7,56 +7,72 @@ from abc import abstractmethod
 from torch.utils.data import Dataset
 
 
+def sample_id2cluster_id(sample_id, cluster_size):
+        return int(sample_id / cluster_size)
+
+
 class DatasetGenerator(Dataset):
-    def __init__(self, data_dirs, batch_size=None, shuffle=False, drop_last=False, random_seed=0):
-        self.data_dirs = data_dirs
-        self.preprocessed_dirs = None
+    def __init__(self, data_dir, sample_ids, cluster_size=1, batch_size=None, shuffle=False, drop_last=False, random_seed=0):
+        self.data_dir = data_dir
+        self.sample_ids = sample_ids
+        self.cluster_size = cluster_size
         self.batch_size = batch_size
         self.shuffle = shuffle
         self.drop_last = drop_last
         self.random_seed = random_seed
-        self.OTFprocessor = None
+
+        self.cache = {}
+        self.preprocessor = None
 
         if self.batch_size is None:
-            self.batch_num = len(self.data_dirs)
+            self.batch_num = len(self.sample_ids)
         else:
-            self.batch_num = math.ceil(len(self.data_dirs) / self.batch_size)
-            if self.drop_last and len(self.data_dirs) % self.batch_size != 0:
+            self.batch_num = math.ceil(len(self.sample_ids) / self.batch_size)
+            if self.drop_last and len(self.sample_ids) % self.batch_size != 0:
                 self.batch_num = self.batch_num - 1
 
-        self.sample_indices = np.arange(len(self.data_dirs))
+        self.random_indices = np.arange(len(self.sample_ids))
         if self.shuffle: 
             np.random.seed(self.random_seed)
-            np.random.shuffle(self.sample_indices)
+            np.random.shuffle(self.random_indices)
         self.counter = 0
 
     def __len__(self):
         return self.batch_num
 
-    def get_sample_dirs(self, index, allow_preprocessed=True):
+    def fetch_cache(self, sample_id):
+        cluster_id = sample_id2cluster_id(sample_id, self.cluster_size)
+        cluster_dir = os.path.join(self.data_dir, f"{cluster_id}.pkl")
+        self.cache.update(joblib.load(cluster_dir))
+
+    def index2sample_ids(self, index):
         if self.batch_size is None:
-            if self.preprocessed_dirs is not None and allow_preprocessed:
-                sample_dirs = self.preprocessed_dirs[index]
-            else:
-                sample_dirs = self.data_dirs[index]
+            sample_id = self.sample_ids[index]
+            return sample_id
         else:
-            sample_dirs = []
+            sample_ids = []
             start_index = index * self.batch_size
             end_index = (index + 1) * self.batch_size
-            for sample_index in self.sample_indices[start_index:end_index]:
-                if self.preprocessed_dirs is not None and allow_preprocessed:
-                    sample_dir = self.preprocessed_dirs[sample_index]
-                else:
-                    sample_dir = self.data_dirs[sample_index]
-                sample_dirs.append(sample_dir)
-        return sample_dirs
+            for sample_index in self.random_indices[start_index:end_index]:
+                sample_id = self.sample_ids[sample_index]
+                sample_ids.append(sample_id)
+            return sample_ids
 
-    def get_samples(self, index, allow_preprocessed=True):
-        sample_dirs = self.get_sample_dirs(index, allow_preprocessed=allow_preprocessed)
-        if isinstance(sample_dirs, list):
-            samples = [joblib.load(sample_dir) for sample_dir in sample_dirs]
+    def get_sample(self, sample_id):
+        if sample_id not in self.cache:
+            # Fetch data into cache
+            self.fetch_cache(sample_id)
+        # Load from cache
+        sample = self.cache.pop(sample_id)
+        return sample
+
+    def get_samples(self, index):
+        sample_ids = self.index2sample_ids(index)
+        if isinstance(sample_ids, list):
+            samples = [self.get_sample(sample_id) for sample_id in sample_ids]
         else:
-            samples = joblib.load(sample_dirs)
+            sample_id = sample_ids
+            samples = self.get_sample(sample_id)
         return samples
 
     def __getitem__(self, index):
@@ -67,15 +83,105 @@ class DatasetGenerator(Dataset):
         if self.counter >= self.batch_num:
             if self.shuffle: 
                 np.random.seed(self.random_seed)
-                np.random.shuffle(self.sample_indices)
+                np.random.shuffle(self.random_indices)
             self.counter = 0
 
-        samples = self.get_samples(index, allow_preprocessed=True)
+        samples = self.get_samples(index)
 
-        if self.OTFprocessor is not None:
-            samples = self.OTFprocessor(samples)
+        if self.preprocessor is not None:
+            samples = self.preprocessor(samples)
         return samples
 
+    def set_preprocessor(self, preprocessor):
+        self.preprocessor = preprocessor
+
+    def clear_preprocessor(self):
+        self.preprocessor = None
+
+    def precomputing(self, name="precomputed", rebuild=False, save_interval=1000):
+        assert "precomputing" in dir(self.preprocessor), "Please implement method precomputing for the preprocessor class"
+
+        # Prepare new directory
+        new_data_dir = self.data_dir.split("/")
+        new_data_dir[-1] = name
+        new_data_dir = "/" + os.path.join(*new_data_dir)
+        if not os.path.exists(new_data_dir):
+            os.makedirs(new_data_dir)
+
+        # Load list of completed samples
+        completed_dir = self.data_dir.split("/")
+        completed_dir[-1] = name + ".txt"
+        completed_dir = "/" + os.path.join(*completed_dir)
+        if os.path.exists(completed_dir):
+            with open(completed_dir, "r") as f:
+                completed_sample_ids = set([int(line) for line in f.read().split("\n")])
+        else:
+            completed_sample_ids = {"_"}
+
+        cache = {}
+        for index in tqdm(range(self.batch_num), total=self.batch_num):
+            sample_ids = self.index2sample_ids(index)
+            if isinstance(sample_ids, list):
+                for sample_id in sample_ids:
+                    if sample_id not in completed_sample_ids or rebuild:
+                        samples = [self.get_sample(sample_id) for sample_id in sample_ids]
+                        processed_samples = self.preprocessor.precomputing(samples)
+                        for sample_id, processed_sample in zip(sample_ids, processed_samples):
+                            cluster_id = sample_id2cluster_id(sample_id, self.cluster_size)
+                            if cluster_id not in cache:
+                                cache[cluster_id] = {sample_id: processed_sample}
+                            else:
+                                cache[cluster_id][sample_id] = processed_sample
+                            completed_sample_ids.add(sample_id)
+                        break
+            else:
+                sample_id = sample_ids
+                if sample_id not in completed_sample_ids or rebuild:
+                    sample = self.get_sample(sample_id)
+                    processed_sample = self.preprocessor.precomputing(sample)
+                    cluster_id = sample_id2cluster_id(sample_id, self.cluster_size)
+                    if cluster_id not in cache:
+                        cache[cluster_id] = {sample_id: processed_sample}
+                    else:
+                        cache[cluster_id][sample_id] = processed_sample
+                    completed_sample_ids.add(sample_id)
+
+            # Save cache to disk
+            if (index + 1) % save_interval == 0:
+                for cluster_id in cache:
+                    cluster_dir = new_data_dir + f"/{cluster_id}.pkl"
+                    # Load cluster
+                    cluster = {}
+                    if os.path.exists(cluster_dir):
+                        cluster = joblib.load(cluster_dir)
+                    # Update cluster
+                    cluster.update(cache[cluster_id])
+                    # Save cluster
+                    joblib.dump(cluster, cluster_dir)
+                # Reset cache
+                cache = {}
+                if "_" in completed_sample_ids:
+                    completed_sample_ids.remove("_")
+                with open(completed_dir, "w") as f:
+                    f.write("\n".join([str(sample_id) for sample_id in completed_sample_ids]))
+
+        for cluster_id in cache:
+            cluster_dir = new_data_dir + f"/{cluster_id}.pkl"
+            # Load cluster
+            cluster = {}
+            if os.path.exists(cluster_dir):
+                cluster = joblib.load(cluster_dir)
+            # Update cluster
+            cluster.update(cache[cluster_id])
+            # Save cluster
+            joblib.dump(cluster, cluster_dir)
+        with open(completed_dir, "w") as f:
+            f.write("\n".join([str(sample_id) for sample_id in completed_sample_ids]))
+
+        # Set new data_dir
+        self.data_dir = new_data_dir
+
+    # Obsoleted
     def apply_preprocessor(self, preprocessor=None, name="preprocessed", rebuild=False):
         """
         Preprocessor is applied to each sample only once and saved to a disk before training.
@@ -129,6 +235,7 @@ class DatasetGenerator(Dataset):
         assert len(self.preprocessed_dirs) == len(self.data_dirs)
         print("Preprocessing computed!")
 
+    # Obsoleted
     def set_OTFprocessor(self, OTFprocessor):
         """
         OTFprocessor (On-the-fly-processor) is applied to mini-batch or sample during training.
@@ -136,14 +243,8 @@ class DatasetGenerator(Dataset):
         """
         self.OTFprocessor = OTFprocessor
 
+    # Obsoleted
     def clear_OTFprocessor(self):
-        self.OTFprocessor = None
-
-    # Obsoleted
-    def set_preprocessor(self, OTFprocessor):
-        self.OTFprocessor = OTFprocessor
-    # Obsoleted
-    def clear_preprocessor(self):
         self.OTFprocessor = None
 
 
@@ -152,10 +253,10 @@ class BaseDataset:
 
     def __init__(self, 
                 max_samples=None, 
-                max_seq_len=None,
                 train_split_ratio=0.8,
                 val_split_ratio=0.1,
                 test_split_ratio=0.1,
+                cluster_size=10000,
                 filter=None,
                 rebuild=False,
                 batch_size=None, 
@@ -177,10 +278,10 @@ class BaseDataset:
                 filter = (filter, filter, filter)
 
         self.max_samples = max_samples
-        self.max_seq_len = max_seq_len
         self.train_split_ratio = train_split_ratio
         self.val_split_ratio = val_split_ratio
         self.test_split_ratio = test_split_ratio
+        self.cluster_size = cluster_size
         self.filter = filter
         self.rebuild = rebuild
         self.batch_size = batch_size
@@ -189,9 +290,12 @@ class BaseDataset:
         self.random_seed = random_seed
         self.local_dir = local_dir if local_dir is not None else self.local_dir
 
-        if not os.path.exists(os.path.join(self.local_dir, "train_dirs.txt")) or \
-                not os.path.exists(os.path.join(self.local_dir, "val_dirs.txt")) or \
-                not os.path.exists(os.path.join(self.local_dir, "test_dirs.txt")) or \
+        self.prev_cluster_id = -1
+        self.cluster = {}
+
+        if not os.path.exists(os.path.join(self.local_dir, "train_ids.txt")) or \
+                not os.path.exists(os.path.join(self.local_dir, "val_ids.txt")) or \
+                not os.path.exists(os.path.join(self.local_dir, "test_ids.txt")) or \
                 self.rebuild:
             # Build dataset to disk
             self._build()
@@ -231,18 +335,26 @@ class BaseDataset:
             train_indices, test_indices = self._get_split_indices(train_indices)
 
         # Save indices to disk
-        with open(os.path.join(self.local_dir, "train_dirs.txt"), "w") as f:
-            f.write("\n".join([f"{idx}.pkl" for idx in train_indices]))
-        with open(os.path.join(self.local_dir, "val_dirs.txt"), "w") as f:
-            f.write("\n".join([f"{idx}.pkl" for idx in val_indices]))
-        with open(os.path.join(self.local_dir, "test_dirs.txt"), "w") as f:
-            f.write("\n".join([f"{idx}.pkl" for idx in test_indices]))
+        with open(os.path.join(self.local_dir, "train_ids.txt"), "w") as f:
+            f.write("\n".join([f"{idx}" for idx in train_indices]))
+        with open(os.path.join(self.local_dir, "val_ids.txt"), "w") as f:
+            f.write("\n".join([f"{idx}" for idx in val_indices]))
+        with open(os.path.join(self.local_dir, "test_ids.txt"), "w") as f:
+            f.write("\n".join([f"{idx}" for idx in test_indices]))
 
     def _load_data(self, load_method, sample_count=0, mode="train"):
+        cache = {}
         indices = []
         for data in tqdm(load_method()):
-            if not self.rebuild and os.path.exists(os.path.join(self.local_dir, "data", f"{sample_count}.pkl")):
-                continue
+            cluster_id = sample_id2cluster_id(sample_count, self.cluster_size)
+            if cluster_id != self.prev_cluster_id:
+                if os.path.exists(os.path.join(self.local_dir, "data", f"{cluster_id}.pkl")):
+                    # Load cluster
+                    cluster = joblib.load(os.path.join(self.local_dir, "data", f"{cluster_id}.pkl"))
+                    cache.update(cluster)
+                    if sample_count in cache and not self.rebuild:
+                        cache.pop(sample_count)
+                        continue
 
             # Filter data
             if self.filter is not None:
@@ -255,43 +367,62 @@ class BaseDataset:
 
             # Transform data into sample
             sample = self._process_data(data, mode=mode)
-            # Dump sample to disk
-            joblib.dump(sample, os.path.join(self.local_dir, "data", f"{sample_count}.pkl"))
+            # Add sample to cluster
+            if cluster_id != self.prev_cluster_id:
+                # Save cluster to disk if possible
+                if len(self.cluster) > 0:
+                    joblib.dump(self.cluster, os.path.join(self.local_dir, "data", f"{self.prev_cluster_id}.pkl"))
+                # Update previous cluster_id
+                self.prev_cluster_id = cluster_id
+                # Reset cluster
+                self.cluster = {sample_count: sample}
+            else:
+                self.cluster[sample_count] = sample
 
             # Append index
             indices.append(sample_count)
             sample_count += 1
+
+        # Save cluster to disk if possible
+        if len(self.cluster) > 0:
+            joblib.dump(self.cluster, os.path.join(self.local_dir, "data", f"{self.prev_cluster_id}.pkl"))
         return indices
 
     def _load_datasets(self):
         # Read train_dirs, val_dirs, and test_dirs
-        with open(os.path.join(self.local_dir, "train_dirs.txt"), "r") as f:
-            train_dirs = []
+        with open(os.path.join(self.local_dir, "train_ids.txt"), "r") as f:
+            train_ids = []
             for line in f.readlines():
                 line = line.replace("\n", "")
-                train_dirs.append(line)
-        with open(os.path.join(self.local_dir, "val_dirs.txt"), "r") as f:
-            val_dirs = []
+                train_ids.append(int(line))
+        with open(os.path.join(self.local_dir, "val_ids.txt"), "r") as f:
+            val_ids = []
             for line in f.readlines():
                 line = line.replace("\n", "")
-                val_dirs.append(line)
-        with open(os.path.join(self.local_dir, "test_dirs.txt"), "r") as f:
-            test_dirs = []
+                val_ids.append(int(line))
+        with open(os.path.join(self.local_dir, "test_ids.txt"), "r") as f:
+            test_ids = []
             for line in f.readlines():
                 line = line.replace("\n", "")
-                test_dirs.append(line)
+                test_ids.append(int(line))
         # Get Generators
-        train = DatasetGenerator([os.path.join(self.local_dir, "data", file_name) for file_name in train_dirs], 
+        train = DatasetGenerator(data_dir=os.path.join(self.local_dir, "data"), 
+                                 sample_ids=train_ids,
+                                 cluster_size=self.cluster_size,
                                  batch_size=self.batch_size, 
                                  shuffle=self.shuffle, 
                                  drop_last=self.drop_last,
                                  random_seed=self.random_seed)
-        val = DatasetGenerator([os.path.join(self.local_dir, "data", file_name) for file_name in val_dirs], 
+        val = DatasetGenerator(data_dir=os.path.join(self.local_dir, "data"), 
+                               sample_ids=val_ids,
+                               cluster_size=self.cluster_size,
                                batch_size=self.batch_size, 
                                shuffle=self.shuffle, 
                                drop_last=self.drop_last,
                                random_seed=self.random_seed)
-        test = DatasetGenerator([os.path.join(self.local_dir, "data", file_name) for file_name in test_dirs], 
+        test = DatasetGenerator(data_dir=os.path.join(self.local_dir, "data"), 
+                                sample_ids=test_ids,
+                                cluster_size=self.cluster_size,
                                 batch_size=self.batch_size, 
                                 shuffle=self.shuffle, 
                                 drop_last=self.drop_last,

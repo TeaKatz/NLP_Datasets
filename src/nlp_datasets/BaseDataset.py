@@ -1,5 +1,6 @@
 import os
 import math
+import json
 import joblib
 import numpy as np
 from tqdm import tqdm
@@ -8,11 +9,13 @@ from torch.utils.data import Dataset
 
 
 def sample_id2cluster_id(sample_id, cluster_size):
+    if cluster_size is not None:
         return int(sample_id / cluster_size)
+    return 0
 
 
 class DatasetGenerator(Dataset):
-    def __init__(self, data_dir, sample_ids, cluster_size=1, batch_size=None, shuffle=False, drop_last=False, random_seed=0):
+    def __init__(self, data_dir, sample_ids, cluster_size=None, batch_size=None, shuffle=False, drop_last=False, random_seed=0):
         self.data_dir = data_dir
         self.sample_ids = sample_ids
         self.cluster_size = cluster_size
@@ -63,7 +66,10 @@ class DatasetGenerator(Dataset):
             # Fetch data into cache
             self.fetch_cache(sample_id)
         # Load from cache
-        sample = self.cache.pop(sample_id)
+        if self.cluster_size is None:
+            sample = self.cache[sample_id]
+        else:
+            sample = self.cache.pop(sample_id)
         return sample
 
     def get_samples(self, index):
@@ -98,7 +104,7 @@ class DatasetGenerator(Dataset):
     def clear_preprocessor(self):
         self.preprocessor = None
 
-    def precomputing(self, name="precomputed", rebuild=False, save_interval=1000):
+    def precomputing(self, name="precomputed", rebuild=False, save_interval=None):
         assert "precomputing" in dir(self.preprocessor), "Please implement method precomputing for the preprocessor class"
 
         # Prepare new directory
@@ -147,23 +153,24 @@ class DatasetGenerator(Dataset):
                     completed_sample_ids.add(sample_id)
 
             # Save cache to disk
-            if (index + 1) % save_interval == 0:
-                for cluster_id in cache:
-                    cluster_dir = new_data_dir + f"/{cluster_id}.pkl"
-                    # Load cluster
-                    cluster = {}
-                    if os.path.exists(cluster_dir):
-                        cluster = joblib.load(cluster_dir)
-                    # Update cluster
-                    cluster.update(cache[cluster_id])
-                    # Save cluster
-                    joblib.dump(cluster, cluster_dir)
-                # Reset cache
-                cache = {}
-                if "_" in completed_sample_ids:
-                    completed_sample_ids.remove("_")
-                with open(completed_dir, "w") as f:
-                    f.write("\n".join([str(sample_id) for sample_id in completed_sample_ids]))
+            if save_interval is not None:
+                if (index + 1) % save_interval == 0:
+                    for cluster_id in cache:
+                        cluster_dir = new_data_dir + f"/{cluster_id}.pkl"
+                        # Load cluster
+                        cluster = {}
+                        if os.path.exists(cluster_dir):
+                            cluster = joblib.load(cluster_dir)
+                        # Update cluster
+                        cluster.update(cache[cluster_id])
+                        # Save cluster
+                        joblib.dump(cluster, cluster_dir)
+                    # Reset cache
+                    cache = {}
+                    if "_" in completed_sample_ids:
+                        completed_sample_ids.remove("_")
+                    with open(completed_dir, "w") as f:
+                        f.write("\n".join([str(sample_id) for sample_id in completed_sample_ids]))
 
         for cluster_id in cache:
             cluster_dir = new_data_dir + f"/{cluster_id}.pkl"
@@ -181,72 +188,6 @@ class DatasetGenerator(Dataset):
         # Set new data_dir
         self.data_dir = new_data_dir
 
-    # Obsoleted
-    def apply_preprocessor(self, preprocessor=None, name="preprocessed", rebuild=False):
-        """
-        Preprocessor is applied to each sample only once and saved to a disk before training.
-        Usually it is used for one-shot data augmentations.
-
-        If preprocessor is None, this method will load from a disk.
-        """
-        # Prepare directory
-        preprocessed_base_dir = self.data_dirs[0].split("/")[:-1]
-        preprocessed_base_dir[-1] = name
-        preprocessed_base_dir = "/" + os.path.join(*preprocessed_base_dir)
-        if not os.path.exists(preprocessed_base_dir):
-            os.makedirs(preprocessed_base_dir)
-
-        # Get list of existed files
-        existed_files = set(os.listdir(preprocessed_base_dir))
-
-        self.preprocessed_dirs = []
-        for index in tqdm(range(self.batch_num), total=self.batch_num):
-            # Load samples (can be a sample or a batch depending on the batch_size setting)
-            sample_dirs = self.get_sample_dirs(index, allow_preprocessed=False)
-
-            if isinstance(sample_dirs, list):
-                sample_names = [sample_dir.split("/")[-1] for sample_dir in sample_dirs]
-                preprocessed_dirs = [preprocessed_base_dir + "/" + sample_name for sample_name in sample_names]
-                self.preprocessed_dirs.extend(preprocessed_dirs)
-                # If any sample in the batch missing, reprocess the whole batch
-                for preprocessed_dir, sample_name in zip(preprocessed_dirs, sample_names):
-                    if sample_name not in existed_files or rebuild:
-                        if preprocessor is not None:
-                            samples = self.get_samples(index, allow_preprocessed=False)
-                            processed_samples = preprocessor(samples)
-                            for processed_sample, preprocessed_dir in zip(processed_samples, preprocessed_dirs):
-                                joblib.dump(processed_sample, preprocessed_dir)
-                            break
-                        else:
-                            raise Exception(f"Preprocessing {sample_name} is not found! Please provide preprocessor.")
-            else:
-                # Loaded samples as a sample
-                sample_name = sample_dirs.split("/")[-1]
-                preprocessed_dir = preprocessed_base_dir + "/" + sample_name
-                self.preprocessed_dirs.append(preprocessed_dir)
-                if sample_name not in existed_files or rebuild:
-                    if preprocessor is not None:
-                        sample = self.get_samples(index, allow_preprocessed=False)
-                        processed_sample = preprocessor(sample)
-                        joblib.dump(processed_sample, preprocessed_dir)
-                    else:
-                        raise Exception(f"Preprocessing {sample_name} is not found! Please provide preprocessor.")
-        
-        assert len(self.preprocessed_dirs) == len(self.data_dirs)
-        print("Preprocessing computed!")
-
-    # Obsoleted
-    def set_OTFprocessor(self, OTFprocessor):
-        """
-        OTFprocessor (On-the-fly-processor) is applied to mini-batch or sample during training.
-        Usually it is used for tokenization (words -> ids) or on-the-fly augmentations.
-        """
-        self.OTFprocessor = OTFprocessor
-
-    # Obsoleted
-    def clear_OTFprocessor(self):
-        self.OTFprocessor = None
-
 
 class BaseDataset:
     local_dir = __name__
@@ -256,7 +197,7 @@ class BaseDataset:
                 train_split_ratio=0.8,
                 val_split_ratio=0.1,
                 test_split_ratio=0.1,
-                cluster_size=10000,
+                cluster_size=None,
                 filter=None,
                 rebuild=False,
                 batch_size=None, 
@@ -293,12 +234,46 @@ class BaseDataset:
         self.prev_cluster_id = -1
         self.cluster = {}
 
+        config_dir = os.path.join(self.local_dir, "config.json")
+        config = {
+            "max_samples": max_samples,
+            "train_split_ratio": train_split_ratio,
+            "val_split_ratio": val_split_ratio,
+            "test_split_ratio": test_split_ratio,
+            "cluster_size": cluster_size,
+            "batch_size": batch_size,
+            "shuffle": shuffle,
+            "drop_last": drop_last,
+            "random_seed": random_seed
+        }
         if not os.path.exists(os.path.join(self.local_dir, "train_ids.txt")) or \
-                not os.path.exists(os.path.join(self.local_dir, "val_ids.txt")) or \
-                not os.path.exists(os.path.join(self.local_dir, "test_ids.txt")) or \
-                self.rebuild:
+           not os.path.exists(os.path.join(self.local_dir, "val_ids.txt")) or \
+           not os.path.exists(os.path.join(self.local_dir, "test_ids.txt")) or \
+           self.rebuild:
             # Build dataset to disk
             self._build()
+            # Create config file
+            json.dump(config, open(config_dir, "w"))
+        else:
+            # Check config matching
+            if not os.path.exists(config_dir):
+                # For older implementation migration
+                json.dump(config, open(config_dir, "w"))
+            else:
+                existing_config = json.load(open(config_dir, "r"))
+                if config != existing_config:
+                    print("The existing config is not compatible with the current config, use existing config instead.")
+                    print(f"Existing config:\n{existing_config}")
+                    print(f"Current config:\n{config}")
+                    self.max_samples = existing_config["max_samples"]
+                    self.train_split_ratio = existing_config["train_split_ratio"]
+                    self.val_split_ratio = existing_config["val_split_ratio"]
+                    self.test_split_ratio = existing_config["test_split_ratio"]
+                    self.cluster_size = existing_config["cluster_size"]
+                    self.batch_size = existing_config["batch_size"]
+                    self.shuffle = existing_config["shuffle"]
+                    self.drop_last = existing_config["drop_last"]
+                    self.random_seed = existing_config["random_seed"]
 
         # Load dataset from disk
         self.train, self.val, self.test = self._load_datasets()

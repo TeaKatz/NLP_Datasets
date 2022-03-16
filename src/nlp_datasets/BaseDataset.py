@@ -241,9 +241,6 @@ class BaseDataset:
             "val_split_ratio": val_split_ratio,
             "test_split_ratio": test_split_ratio,
             "cluster_size": cluster_size,
-            "batch_size": batch_size,
-            "shuffle": shuffle,
-            "drop_last": drop_last,
             "random_seed": random_seed
         }
         if not os.path.exists(os.path.join(self.local_dir, "train_ids.txt")) or \
@@ -261,19 +258,18 @@ class BaseDataset:
                 json.dump(config, open(config_dir, "w"))
             else:
                 existing_config = json.load(open(config_dir, "r"))
-                if config != existing_config:
-                    print("The existing config is not compatible with the current config, use existing config instead.")
-                    print(f"Existing config:\n{existing_config}")
-                    print(f"Current config:\n{config}")
-                    self.max_samples = existing_config["max_samples"]
-                    self.train_split_ratio = existing_config["train_split_ratio"]
-                    self.val_split_ratio = existing_config["val_split_ratio"]
-                    self.test_split_ratio = existing_config["test_split_ratio"]
-                    self.cluster_size = existing_config["cluster_size"]
-                    self.batch_size = existing_config["batch_size"]
-                    self.shuffle = existing_config["shuffle"]
-                    self.drop_last = existing_config["drop_last"]
-                    self.random_seed = existing_config["random_seed"]
+                for key in config.keys():
+                    if config[key] != existing_config[key]:
+                        print("The existing config is not compatible with the current config, use existing config instead.")
+                        print(f"Existing config:\n{existing_config}")
+                        print(f"Current config:\n{config}")
+                        self.max_samples = existing_config["max_samples"]
+                        self.train_split_ratio = existing_config["train_split_ratio"]
+                        self.val_split_ratio = existing_config["val_split_ratio"]
+                        self.test_split_ratio = existing_config["test_split_ratio"]
+                        self.cluster_size = existing_config["cluster_size"]
+                        self.random_seed = existing_config["random_seed"]
+                        break
 
         # Load dataset from disk
         self.train, self.val, self.test = self._load_datasets()

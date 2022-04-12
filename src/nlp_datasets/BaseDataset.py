@@ -120,7 +120,7 @@ class DatasetGenerator(Dataset):
         completed_dir = "/" + os.path.join(*completed_dir)
         if os.path.exists(completed_dir):
             with open(completed_dir, "r") as f:
-                completed_sample_ids = set([int(line) for line in f.read().split("\n")])
+                completed_sample_ids = set([int(line) for line in f.read().split("\n") if line in list(range(10))])
         else:
             completed_sample_ids = {"_"}
 
@@ -171,6 +171,9 @@ class DatasetGenerator(Dataset):
                         completed_sample_ids.remove("_")
                     with open(completed_dir, "w") as f:
                         f.write("\n".join([str(sample_id) for sample_id in completed_sample_ids]))
+
+        if "_" in completed_sample_ids:
+            completed_sample_ids.remove("_")
 
         for cluster_id in cache:
             cluster_dir = new_data_dir + f"/{cluster_id}.pkl"

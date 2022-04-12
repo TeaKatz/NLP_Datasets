@@ -120,7 +120,7 @@ class DatasetGenerator(Dataset):
         completed_dir = "/" + os.path.join(*completed_dir)
         if os.path.exists(completed_dir):
             with open(completed_dir, "r") as f:
-                completed_sample_ids = set([int(line) for line in f.read().split("\n") if line in list(range(10))])
+                completed_sample_ids = set([int(line) for line in f.read().split("\n") if line != "" and line != "_"])
         else:
             completed_sample_ids = {"_"}
 

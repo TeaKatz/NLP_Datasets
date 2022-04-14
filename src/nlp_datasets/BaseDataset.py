@@ -43,6 +43,9 @@ class DatasetGenerator(Dataset):
     def __len__(self):
         return self.batch_num
 
+    def clear_cache(self):
+        self.cache = {}
+
     def fetch_cache(self, sample_id):
         cluster_id = sample_id2cluster_id(sample_id, self.cluster_size)
         cluster_dir = os.path.join(self.data_dir, f"{cluster_id}.pkl")
@@ -190,6 +193,8 @@ class DatasetGenerator(Dataset):
 
         # Set new data_dir
         self.data_dir = new_data_dir
+        # Clear cache
+        self.clear_cache()
 
 
 class BaseDataset:

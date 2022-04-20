@@ -3,6 +3,7 @@ import math
 import json
 import joblib
 import numpy as np
+import pandas as pd
 from tqdm import tqdm
 from abc import abstractmethod
 from torch.utils.data import Dataset
@@ -15,6 +16,119 @@ def sample_id2cluster_id(sample_id, cluster_size):
 
 
 class DatasetGenerator(Dataset):
+    def __init__(self, data_dir, batch_size=None, shuffle=False, drop_last=False, random_seed=0):
+        self.data_dir = data_dir
+        self.batch_size = batch_size
+        self.shuffle = shuffle
+        self.drop_last = drop_last
+        self.random_seed = random_seed
+
+        self.preprocessor = None
+        self.dataframe = pd.read_pickle(self.data_dir)
+
+        if self.batch_size is None:
+            self.batch_num = len(self.dataframe)
+        else:
+            self.batch_num = math.ceil(len(self.dataframe) / self.batch_size)
+            if self.drop_last and len(self.dataframe) % self.batch_size != 0:
+                self.batch_num = self.batch_num - 1
+
+        self.random_indices = np.arange(len(self.dataframe))
+        if self.shuffle: 
+            np.random.seed(self.random_seed)
+            np.random.shuffle(self.random_indices)
+        self.counter = 0
+
+    def __len__(self):
+        return self.batch_num
+
+    def index2sample_ids(self, index):
+        if self.batch_size is None:
+            sample_id = self.random_indices[index]
+            return [sample_id]
+        else:
+            start_index = index * self.batch_size
+            end_index = (index + 1) * self.batch_size
+            sample_ids = [sample_id for sample_id in self.random_indices[start_index:end_index]]
+            return sample_ids
+
+    def dataframe_to_samples(self, rows):
+        # Get samples: {key: [values]}
+        samples = self.dataframe.iloc[rows].to_dict("list")
+        # Convert samples to [{key: value}, ...]
+        samples = [{key: values[i] for key, values in samples.items()} for i in range(len(rows))]
+        return samples
+
+    def get_samples(self, index):
+        sample_ids = self.index2sample_ids(index)
+        # Get samples
+        samples = self.dataframe_to_samples(sample_ids)
+        if self.batch_size is None:
+            samples = samples[0]
+        return samples
+
+    def __getitem__(self, index):
+        if index >= len(self): 
+            raise IndexError
+
+        self.counter += 1
+        if self.counter >= self.batch_num:
+            if self.shuffle: 
+                np.random.seed(self.random_seed)
+                np.random.shuffle(self.random_indices)
+            self.counter = 0
+
+        samples = self.get_samples(index)
+
+        if self.preprocessor is not None:
+            samples = self.preprocessor(samples)
+        return samples
+
+    def set_preprocessor(self, preprocessor):
+        self.preprocessor = preprocessor
+
+    def clear_preprocessor(self):
+        self.preprocessor = None
+
+    def precomputing(self, name="precomputed", rebuild=False, save_interval=None):
+        assert "precomputing" in dir(self.preprocessor), "Please implement method precomputing for the preprocessor class"
+
+        # Prepare new directory
+        new_data_dir = self.data_dir.split("/")
+        new_data_dir[-2] = name
+        new_data_dir = "/" + os.path.join(*new_data_dir)
+        new_folder_dir = "/" + os.path.join(*new_data_dir[:-1])
+        if not os.path.exists(new_folder_dir):
+            os.makedirs(new_folder_dir)
+
+        # Initial new_dataframe
+        init_row = 0
+        if os.path.exists(new_data_dir) and not rebuild:
+            new_dataframe = pd.read_pickle(new_data_dir)
+            init_row = len(new_dataframe)
+        else:
+            new_dataframe = pd.DataFrame()
+
+        if init_row < len(self.dataframe):
+            for row in tqdm(range(init_row, len(self.dataframe))):
+                # Get sample
+                sample = self.dataframe_to_samples([row])[0]
+                # Process
+                processed_sample = self.preprocessor.precomputing(sample)
+                # Append to new_dataframe
+                new_dataframe.append(processed_sample, ignore_index=True)
+                # Save
+                if (save_interval is not None) and ((row + 1) % save_interval == 0):
+                    new_dataframe.to_pickle(new_data_dir)
+            # Save
+            new_dataframe.to_pickle(new_data_dir)
+
+        # Set data_dir and dataframe
+        self.data_dir = new_data_dir
+        self.dataframe = new_dataframe
+
+
+class Old_DatasetGenerator(Dataset):
     def __init__(self, data_dir, sample_ids, cluster_size=None, batch_size=None, shuffle=False, drop_last=False, random_seed=0):
         self.data_dir = data_dir
         self.sample_ids = sample_ids
@@ -196,6 +310,32 @@ class DatasetGenerator(Dataset):
         # Clear cache
         self.clear_cache()
 
+    def immigation(self, pickle_name):
+        # Ensure pickle_name has ".pkl" at the end
+        if pickle_name[-4:] != ".pkl":
+            pickle_name = pickle_name + ".pkl"
+        # Get pickle_dir
+        pickle_dir = self.data_dir + "/" + pickle_name
+        # Get the whole dataset
+        data_dict = None
+        for index in tqdm(range(len(self))):
+            # Get samples
+            if self.batch_size is None:
+                samples = [self[index]]
+            else:
+                samples = self[index]
+            # Create data_dict
+            if data_dict is None:
+                data_dict = {key: [] for key in samples[0].keys()}
+            for sample in samples:
+                for key, value in sample.items():
+                    data_dict[key].append(value)
+        # Create dataframe and save
+        dataframe = pd.DataFrame.from_dict(data_dict)
+        dataframe.to_pickle(pickle_dir, sep="\t")
+        # Return new DatasetGenerator
+        return DatasetGenerator(pickle_dir, batch_size=self.batch_size, shuffle=self.shuffle, drop_last=self.drop_last, random_seed=self.random_seed)
+
 
 class BaseDataset:
     local_dir = __name__
@@ -281,6 +421,11 @@ class BaseDataset:
 
         # Load dataset from disk
         self.train, self.val, self.test = self._load_datasets()
+
+    def immigation(self):
+        self.train = self.train.immigation("train.pkl")
+        self.val = self.val.immigation("val.pkl")
+        self.test = self.test.immigation("test.pkl")
 
     def _build(self):
         # Create folder
@@ -385,27 +530,33 @@ class BaseDataset:
                 line = line.replace("\n", "")
                 test_ids.append(int(line))
         # Get Generators
-        train = DatasetGenerator(data_dir=os.path.join(self.local_dir, "data"), 
-                                 sample_ids=train_ids,
-                                 cluster_size=self.cluster_size,
-                                 batch_size=self.batch_size, 
-                                 shuffle=self.shuffle, 
-                                 drop_last=self.drop_last,
-                                 random_seed=self.random_seed)
-        val = DatasetGenerator(data_dir=os.path.join(self.local_dir, "data"), 
-                               sample_ids=val_ids,
-                               cluster_size=self.cluster_size,
-                               batch_size=self.batch_size, 
-                               shuffle=self.shuffle, 
-                               drop_last=self.drop_last,
-                               random_seed=self.random_seed)
-        test = DatasetGenerator(data_dir=os.path.join(self.local_dir, "data"), 
-                                sample_ids=test_ids,
-                                cluster_size=self.cluster_size,
-                                batch_size=self.batch_size, 
-                                shuffle=self.shuffle, 
-                                drop_last=self.drop_last,
-                                random_seed=self.random_seed)
+        train = Old_DatasetGenerator(
+            data_dir=os.path.join(self.local_dir, "data"), 
+            sample_ids=train_ids,
+            cluster_size=self.cluster_size,
+            batch_size=self.batch_size, 
+            shuffle=self.shuffle, 
+            drop_last=self.drop_last,
+            random_seed=self.random_seed
+        )
+        val = Old_DatasetGenerator(
+            data_dir=os.path.join(self.local_dir, "data"), 
+            sample_ids=val_ids,
+            cluster_size=self.cluster_size,
+            batch_size=self.batch_size, 
+            shuffle=self.shuffle, 
+            drop_last=self.drop_last,
+            random_seed=self.random_seed
+        )
+        test = Old_DatasetGenerator(
+            data_dir=os.path.join(self.local_dir, "data"), 
+            sample_ids=test_ids,
+            cluster_size=self.cluster_size,
+            batch_size=self.batch_size, 
+            shuffle=self.shuffle, 
+            drop_last=self.drop_last,
+            random_seed=self.random_seed
+        )
         return train, val, test
 
     def _get_split_indices(self, indices):

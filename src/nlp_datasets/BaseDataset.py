@@ -91,13 +91,12 @@ class DatasetGenerator(Dataset):
         self.preprocessor = None
 
     def precomputing(self, name="precomputed", rebuild=False, save_interval=None):
-        assert "precomputing" in dir(self.preprocessor), "Please implement method precomputing for the preprocessor class"
-
         # Prepare new directory
         new_data_dir = self.data_dir.split("/")
         new_data_dir[-2] = name
+        new_folder_dir = new_data_dir[:-1]
         new_data_dir = "/" + os.path.join(*new_data_dir)
-        new_folder_dir = "/" + os.path.join(*new_data_dir[:-1])
+        new_folder_dir = "/" + os.path.join(*new_folder_dir)
         if not os.path.exists(new_folder_dir):
             os.makedirs(new_folder_dir)
 
@@ -110,13 +109,15 @@ class DatasetGenerator(Dataset):
             new_dataframe = pd.DataFrame()
 
         if init_row < len(self.dataframe):
+            assert self.preprocessor is not None, "Please set preprocessor using set_preprocessor()"
+            assert "precomputing" in dir(self.preprocessor), "Please implement method precomputing for the preprocessor class"
             for row in tqdm(range(init_row, len(self.dataframe))):
                 # Get sample
                 sample = self.dataframe_to_samples([row])[0]
                 # Process
                 processed_sample = self.preprocessor.precomputing(sample)
                 # Append to new_dataframe
-                new_dataframe.append(processed_sample, ignore_index=True)
+                new_dataframe = new_dataframe.append(processed_sample, ignore_index=True)
                 # Save
                 if (save_interval is not None) and ((row + 1) % save_interval == 0):
                     new_dataframe.to_pickle(new_data_dir)
@@ -222,8 +223,6 @@ class Old_DatasetGenerator(Dataset):
         self.preprocessor = None
 
     def precomputing(self, name="precomputed", rebuild=False, save_interval=None):
-        assert "precomputing" in dir(self.preprocessor), "Please implement method precomputing for the preprocessor class"
-
         # Prepare new directory
         new_data_dir = self.data_dir.split("/")
         new_data_dir[-1] = name
@@ -247,6 +246,7 @@ class Old_DatasetGenerator(Dataset):
             if isinstance(sample_ids, list):
                 for sample_id in sample_ids:
                     if sample_id not in completed_sample_ids or rebuild:
+                        assert "precomputing" in dir(self.preprocessor), "Please implement method precomputing for the preprocessor class"
                         samples = [self.get_sample(sample_id) for sample_id in sample_ids]
                         processed_samples = self.preprocessor.precomputing(samples)
                         for sample_id, processed_sample in zip(sample_ids, processed_samples):
@@ -260,6 +260,7 @@ class Old_DatasetGenerator(Dataset):
             else:
                 sample_id = sample_ids
                 if sample_id not in completed_sample_ids or rebuild:
+                    assert "precomputing" in dir(self.preprocessor), "Please implement method precomputing for the preprocessor class"
                     sample = self.get_sample(sample_id)
                     processed_sample = self.preprocessor.precomputing(sample)
                     cluster_id = sample_id2cluster_id(sample_id, self.cluster_size)
@@ -310,13 +311,14 @@ class Old_DatasetGenerator(Dataset):
         # Clear cache
         self.clear_cache()
 
-    def immigation(self, pickle_name):
+    def migration(self, pickle_name):
         # Ensure pickle_name has ".pkl" at the end
         if pickle_name[-4:] != ".pkl":
             pickle_name = pickle_name + ".pkl"
         # Get pickle_dir
         pickle_dir = self.data_dir + "/" + pickle_name
         # Get the whole dataset
+        print("Migrating...")
         data_dict = None
         for index in tqdm(range(len(self))):
             # Get samples
@@ -332,9 +334,25 @@ class Old_DatasetGenerator(Dataset):
                     data_dict[key].append(value)
         # Create dataframe and save
         dataframe = pd.DataFrame.from_dict(data_dict)
-        dataframe.to_pickle(pickle_dir, sep="\t")
+        dataframe.to_pickle(pickle_dir)
+        # Verification
+        print("Verifying...")
+        new_datagen = DatasetGenerator(pickle_dir, batch_size=self.batch_size, shuffle=self.shuffle, drop_last=self.drop_last, random_seed=self.random_seed)
+        assert len(self) == len(new_datagen), f"Lengths are not equal: {len(self)} != {len(new_datagen)}"
+        for index in tqdm(range(len(self))):
+            # Get samples
+            if self.batch_size is None:
+                old_samples = [self[index]]
+                new_samples = [new_datagen[index]]
+            else:
+                old_samples = self[index]
+                new_samples = new_datagen[index]
+            # Compare
+            for old_sample, new_sample in zip(old_samples, new_samples):
+                for key in old_sample.keys():
+                    assert old_sample[key] == new_sample[key], f"Sample {index}-{key} is not the same\n{old_sample[key]}\n{new_sample[key]}"
         # Return new DatasetGenerator
-        return DatasetGenerator(pickle_dir, batch_size=self.batch_size, shuffle=self.shuffle, drop_last=self.drop_last, random_seed=self.random_seed)
+        return new_datagen
 
 
 class BaseDataset:
@@ -391,9 +409,9 @@ class BaseDataset:
             "cluster_size": cluster_size,
             "random_seed": random_seed
         }
-        if not os.path.exists(os.path.join(self.local_dir, "train_ids.txt")) or \
-           not os.path.exists(os.path.join(self.local_dir, "val_ids.txt")) or \
-           not os.path.exists(os.path.join(self.local_dir, "test_ids.txt")) or \
+        if not os.path.exists(os.path.join(self.local_dir, "data", "train.pkl")) or \
+           not os.path.exists(os.path.join(self.local_dir, "data", "val.pkl")) or \
+           not os.path.exists(os.path.join(self.local_dir, "data", "test.pkl")) or \
            self.rebuild:
             # Build dataset to disk
             self._build()
@@ -422,65 +440,48 @@ class BaseDataset:
         # Load dataset from disk
         self.train, self.val, self.test = self._load_datasets()
 
-    def immigation(self):
-        self.train = self.train.immigation("train.pkl")
-        self.val = self.val.immigation("val.pkl")
-        self.test = self.test.immigation("test.pkl")
+    def migration(self):
+        self.train = self.train.migration("train.pkl")
+        self.val = self.val.migration("val.pkl")
+        self.test = self.test.migration("test.pkl")
 
     def _build(self):
         # Create folder
         if not os.path.exists(os.path.join(self.local_dir, "data")):
             os.makedirs(os.path.join(self.local_dir, "data"))
 
-        # Load train set to disk
-        train_indices = self._load_data(self._load_train, sample_count=0, mode="train")
+        # Load training set into dataframe
+        train_dataframe = self._load_data(self._load_train, mode="train")
 
-        # Load val set to disk
-        val_indices = []
+        # Load validation set into dataframe
+        val_dataframe = None
         if self.val_split_ratio is None:
             assert self._load_val() is not None, "load_val method is not implemented"
-            val_indices = self._load_data(self._load_val, sample_count=len(train_indices), mode="val")
+            val_dataframe = self._load_data(self._load_val, mode="val")
 
-        # Load test set to disk
-        test_indices = []
+        # Load test set into dataframe
+        test_dataframe = None
         if self.test_split_ratio is None:
             assert self._load_test() is not None, "load_test method is not implemented"
-            test_indices = self._load_data(self._load_test, sample_count=len(train_indices) + len(val_indices), mode="test")
+            test_dataframe = self._load_data(self._load_test, mode="test")
 
-        # Get split indices
-        if self.val_split_ratio is not None and self.test_split_ratio is not None:
-            # Get val_indices and test_indices from train_indices
-            train_indices, val_indices, test_indices = self._get_split_indices(train_indices)
-        elif self.val_split_ratio is not None:
-            # Get val_indices from train_indices
-            train_indices, val_indices = self._get_split_indices(train_indices)
-        elif self.test_split_ratio is not None:
-            # Get test_indices from train_indices
-            train_indices, test_indices = self._get_split_indices(train_indices)
+        # Split train_dataframe (optional)
+        if val_dataframe is None and test_dataframe is None:
+            train_dataframe, val_dataframe, test_dataframe = self._split_dataframe(train_dataframe)
+        elif val_dataframe is None:
+            train_dataframe, val_dataframe = self._split_dataframe(train_dataframe)
+        elif test_dataframe is None:
+            train_dataframe, test_dataframe = self._split_dataframe(train_dataframe)
 
-        # Save indices to disk
-        with open(os.path.join(self.local_dir, "train_ids.txt"), "w") as f:
-            f.write("\n".join([f"{idx}" for idx in train_indices]))
-        with open(os.path.join(self.local_dir, "val_ids.txt"), "w") as f:
-            f.write("\n".join([f"{idx}" for idx in val_indices]))
-        with open(os.path.join(self.local_dir, "test_ids.txt"), "w") as f:
-            f.write("\n".join([f"{idx}" for idx in test_indices]))
+        # Save dataframes
+        train_dataframe.to_pickle(os.path.join(self.local_dir, "data", "train.pkl"))
+        val_dataframe.to_pickle(os.path.join(self.local_dir, "data", "val.pkl"))
+        test_dataframe.to_pickle(os.path.join(self.local_dir, "data", "test.pkl"))
 
-    def _load_data(self, load_method, sample_count=0, mode="train"):
-        cache = {}
-        indices = []
+    def _load_data(self, load_method, mode="train"):
+        dataframe = pd.DataFrame()
         for data in tqdm(load_method()):
-            cluster_id = sample_id2cluster_id(sample_count, self.cluster_size)
-            if cluster_id != self.prev_cluster_id:
-                if os.path.exists(os.path.join(self.local_dir, "data", f"{cluster_id}.pkl")):
-                    # Load cluster
-                    cluster = joblib.load(os.path.join(self.local_dir, "data", f"{cluster_id}.pkl"))
-                    cache.update(cluster)
-                    if sample_count in cache and not self.rebuild:
-                        cache.pop(sample_count)
-                        continue
-
-            # Filter data
+            # Filter data (optional)
             if self.filter is not None:
                 if mode == "train" and self.filter[0] is not None and not self.filter[0](data):
                     continue
@@ -488,97 +489,58 @@ class BaseDataset:
                     continue
                 elif mode == "test" and self.filter[2] is not None and not self.filter[2](data):
                     continue
-
             # Transform data into sample
             sample = self._process_data(data, mode=mode)
-            # Add sample to cluster
-            if cluster_id != self.prev_cluster_id:
-                # Save cluster to disk if possible
-                if len(self.cluster) > 0:
-                    joblib.dump(self.cluster, os.path.join(self.local_dir, "data", f"{self.prev_cluster_id}.pkl"))
-                # Update previous cluster_id
-                self.prev_cluster_id = cluster_id
-                # Reset cluster
-                self.cluster = {sample_count: sample}
-            else:
-                self.cluster[sample_count] = sample
+            # Append sample to dataframe
+            dataframe = dataframe.append(sample, ignore_index=True)
+        return dataframe
 
-            # Append index
-            indices.append(sample_count)
-            sample_count += 1
-
-        # Save cluster to disk if possible
-        if len(self.cluster) > 0:
-            joblib.dump(self.cluster, os.path.join(self.local_dir, "data", f"{self.prev_cluster_id}.pkl"))
-        return indices
+    def _load_dataset(self, mode="train"):
+        data_dir = os.path.join(self.local_dir, "data", f"{mode}.pkl")
+        dataset = DatasetGenerator(
+            data_dir=data_dir,
+            batch_size=self.batch_size, 
+            shuffle=self.shuffle, 
+            drop_last=self.drop_last, 
+            random_seed=self.random_seed
+        )
+        return dataset
 
     def _load_datasets(self):
-        # Read train_dirs, val_dirs, and test_dirs
-        with open(os.path.join(self.local_dir, "train_ids.txt"), "r") as f:
-            train_ids = []
-            for line in f.readlines():
-                line = line.replace("\n", "")
-                train_ids.append(int(line))
-        with open(os.path.join(self.local_dir, "val_ids.txt"), "r") as f:
-            val_ids = []
-            for line in f.readlines():
-                line = line.replace("\n", "")
-                val_ids.append(int(line))
-        with open(os.path.join(self.local_dir, "test_ids.txt"), "r") as f:
-            test_ids = []
-            for line in f.readlines():
-                line = line.replace("\n", "")
-                test_ids.append(int(line))
-        # Get Generators
-        train = Old_DatasetGenerator(
-            data_dir=os.path.join(self.local_dir, "data"), 
-            sample_ids=train_ids,
-            cluster_size=self.cluster_size,
-            batch_size=self.batch_size, 
-            shuffle=self.shuffle, 
-            drop_last=self.drop_last,
-            random_seed=self.random_seed
-        )
-        val = Old_DatasetGenerator(
-            data_dir=os.path.join(self.local_dir, "data"), 
-            sample_ids=val_ids,
-            cluster_size=self.cluster_size,
-            batch_size=self.batch_size, 
-            shuffle=self.shuffle, 
-            drop_last=self.drop_last,
-            random_seed=self.random_seed
-        )
-        test = Old_DatasetGenerator(
-            data_dir=os.path.join(self.local_dir, "data"), 
-            sample_ids=test_ids,
-            cluster_size=self.cluster_size,
-            batch_size=self.batch_size, 
-            shuffle=self.shuffle, 
-            drop_last=self.drop_last,
-            random_seed=self.random_seed
-        )
-        return train, val, test
+        train_set = self._load_dataset("train")
+        val_set = self._load_dataset("val")
+        test_set = self._load_dataset("test")
+        return train_set, val_set, test_set
 
-    def _get_split_indices(self, indices):
+    def _split_dataframe(self, dataframe):
+        indices = np.arange(len(dataframe))
         np.random.seed(self.random_seed)
         np.random.shuffle(indices)
 
-        # Get train_indices
+        # Get train_dataframe
         train_indices = indices[:int(len(indices) * self.train_split_ratio)]
+        train_dataframe = dataframe.iloc[train_indices]
 
         if self.val_split_ratio is not None and self.test_split_ratio is not None:
-            # Get val_indices and test_indices from train_indices
+            # Get val_dataframe
             val_indices = indices[len(train_indices):len(train_indices) + int(len(indices) * self.val_split_ratio)]
+            val_dataframe = dataframe.iloc[val_indices]
+            # Get test_dataframe
             test_indices = indices[len(train_indices) + len(val_indices):len(train_indices) + len(val_indices) + int(len(indices) * self.test_split_ratio)]
-            return train_indices, val_indices, test_indices
+            test_dataframe = dataframe.iloc[test_indices]
+            return train_dataframe, val_dataframe, test_dataframe
         elif self.val_split_ratio is not None:
-            # Get val_indices from train_indices
+            # Get val_dataframe
             val_indices = indices[len(train_indices):len(train_indices) + int(len(indices) * self.val_split_ratio)]
-            return train_indices, val_indices
+            val_dataframe = dataframe.iloc[val_indices]
+            return train_dataframe, val_dataframe
         elif self.test_split_ratio is not None:
-            # Get test_indices from train_indices
+            # Get test_dataframe
             test_indices = indices[len(train_indices):len(train_indices) + int(len(indices) * self.test_split_ratio)]
-            return train_indices, test_indices
+            test_dataframe = dataframe.iloc[test_indices]
+            return train_dataframe, test_dataframe
+        else:
+            raise Exception("You should not be here.")
 
     @abstractmethod
     def _load_train(self):
